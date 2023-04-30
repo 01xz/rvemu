@@ -13,7 +13,7 @@ OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 
 FLAGS += -I$(INC_DIR)
 
-CFLAGS += $(FLAGS) -std=c11 -O3
+CFLAGS += $(FLAGS) -O3
 CFLAGS += -Wall -Werror -Wimplicit-fallthrough
 
 LDFLAGS += -lm
