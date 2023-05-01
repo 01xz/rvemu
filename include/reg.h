@@ -1,4 +1,5 @@
-#include "rvemu.h"
+#ifndef RVEMU_REG_H_
+#define RVEMU_REG_H_
 
 typedef enum {
   kZero,
@@ -10,3 +11,5 @@ typedef enum {
   kT3, kT4, kT5, kT6,
   kNumGpReg,
 } GpRegType;
+
+#endif  // RVEMU_REG_H_
