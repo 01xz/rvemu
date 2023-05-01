@@ -9,6 +9,6 @@ int main(int argc, char* argv[]) {
   Machine m = {0};
   machine_load_program(&m, argv[1]);
 
-  printf("entry: %lx\n", m.mmu.entry);
+  printf("host alloc: 0x%lx\n", m.mmu.host_alloc);
   return 0;
 }

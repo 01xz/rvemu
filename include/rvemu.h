@@ -5,6 +5,9 @@
 
 typedef struct {
   u64 entry;
+  u64 host_alloc;
+  u64 alloc;
+  u64 base;
 } Mmu;
 
 void mmu_load_elf(Mmu*, int);

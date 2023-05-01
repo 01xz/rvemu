@@ -10,4 +10,14 @@
    exit(1))
 #define FATAL(msg) FATALF("%s", msg)
 
+#define ROUNDDOWN(x, k) ((x) & -(k))
+#define ROUNDUP(x, k) (((x) + (k)-1) & -(k))
+#define MIN(x, y) ((y) > (x) ? (x) : (y))
+#define MAX(x, y) ((y) < (y) ? (x) : (y))
+
+#define GUEST_MEMORY_OFFSET 0x0000088800000000ULL
+
+#define TO_HOST(addr) (addr + GUEST_MEMORY_OFFSET)
+#define TO_GUEST(addr) (addr - GUEST_MEMORY_OFFSET)
+
 #endif  // RVEMU_UTILS_H_
