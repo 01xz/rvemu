@@ -19,6 +19,12 @@
 #define TO_HOST(addr) (addr + GUEST_MEMORY_OFFSET)
 #define TO_GUEST(addr) (addr - GUEST_MEMORY_OFFSET)
 
+#define QUADRANT(data) (((data) >> 0) & 0x3)
+
 static inline void fatal(const char* msg) { FATALF("%s", msg); }
+static inline void unreachable() {
+  fatal("unreachable");
+  __builtin_unreachable();
+}
 
 #endif  // RVEMU_UTILS_H_

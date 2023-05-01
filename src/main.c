@@ -9,6 +9,10 @@ int main(int argc, char* argv[]) {
   Machine m = {0};
   machine_load_program(&m, argv[1]);
 
-  printf("host alloc: 0x%lx\n", m.mmu.host_alloc);
+  while (true) {
+    ExitReason reason = machine_step(&m);
+    assert(reason == kSysCall);
+  }
+
   return 0;
 }
