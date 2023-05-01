@@ -46,6 +46,6 @@ typedef struct {
   u64 p_filesz;
   u64 p_memsz;
   u64 p_align;
-} ElfProgramHeader;
+} ElfProgHeader;
 
 #endif  // RVEMU_ELFDEF_H_
