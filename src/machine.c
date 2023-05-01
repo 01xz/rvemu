@@ -8,7 +8,7 @@
 void machine_load_program(Machine* m, const char* prog) {
   int fd = open(prog, O_RDONLY);
   if (fd == -1) {
-    FATAL(strerror(errno));
+    fatal(strerror(errno));
   }
 
   mmu_load_elf(&m->mmu, fd);

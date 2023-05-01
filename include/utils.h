@@ -8,7 +8,6 @@
 #define FATALF(fmt, ...)                                                       \
   (fprintf(stderr, "fatal: %s:%d " fmt "\n", __FILE__, __LINE__, __VA_ARGS__), \
    exit(1))
-#define FATAL(msg) FATALF("%s", msg)
 
 #define ROUNDDOWN(x, k) ((x) & -(k))
 #define ROUNDUP(x, k) (((x) + (k)-1) & -(k))
@@ -19,5 +18,7 @@
 
 #define TO_HOST(addr) (addr + GUEST_MEMORY_OFFSET)
 #define TO_GUEST(addr) (addr - GUEST_MEMORY_OFFSET)
+
+static inline void fatal(const char* msg) { FATALF("%s", msg); }
 
 #endif  // RVEMU_UTILS_H_

@@ -11,12 +11,12 @@ static void load_prog_header(ElfProgHeader* elf_prog_header_p,
                              ElfHeader* elf_header_p, i64 i, FILE* fp) {
   if (fseek(fp, elf_header_p->e_phoff + elf_header_p->e_phentsize * i,
             SEEK_SET) != 0) {
-    FATAL("Seek file failed");
+    fatal("Seek file failed");
   }
 
   if (fread((void*)elf_prog_header_p, 1, sizeof(ElfProgHeader), fp) !=
       sizeof(ElfProgHeader)) {
-    FATAL("File too small");
+    fatal("File too small");
   }
 }
 
@@ -61,18 +61,18 @@ void mmu_load_elf(Mmu* mmu, int fd) {
   u8 buffer[sizeof(ElfHeader)];
   FILE* fp = fdopen(fd, "rb");
   if (fread(buffer, 1, sizeof(ElfHeader), fp) != sizeof(ElfHeader)) {
-    FATAL("File too small");
+    fatal("File too small");
   }
 
   ElfHeader* elf_header_p = (ElfHeader*)buffer;
 
   if (*(u32*)elf_header_p != *(u32*)ELFMAG) {
-    FATAL("Bad elf file");
+    fatal("Bad elf file");
   }
 
   if (elf_header_p->e_machine != EM_RISCV ||
       elf_header_p->e_ident[EI_CLASS] != ELFCLASS64) {
-    FATAL("Only riscv64 elf is supported");
+    fatal("Only riscv64 elf is supported");
   }
 
   mmu->entry = (u64)elf_header_p->e_entry;
