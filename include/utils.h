@@ -8,6 +8,8 @@
 #define FATALF(fmt, ...)                                                       \
   (fprintf(stderr, "fatal: %s:%d " fmt "\n", __FILE__, __LINE__, __VA_ARGS__), \
    exit(1))
+#define FATAL(msg) FATALF("%s", msg)
+#define UNREACHABLE() (FATAL("unreachable"), __builtin_unreachable())
 
 #define ROUNDDOWN(x, k) ((x) & -(k))
 #define ROUNDUP(x, k) (((x) + (k)-1) & -(k))
@@ -20,11 +22,5 @@
 #define TO_GUEST(addr) (addr - GUEST_MEMORY_OFFSET)
 
 #define QUADRANT(data) (((data) >> 0) & 0x3)
-
-static inline void fatal(const char* msg) { FATALF("%s", msg); }
-static inline void unreachable() {
-  fatal("unreachable");
-  __builtin_unreachable();
-}
 
 #endif  // RVEMU_UTILS_H_
