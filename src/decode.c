@@ -28,7 +28,7 @@ static inline i32 get_j_type_imm(const RvInstr* instr) {
   return (imm << 11) >> 11;
 }
 
-void instr_decode(RvInstr* instr, u32 instr_raw) {
+void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
   instr->raw = instr_raw;
   switch (instr->gtype.quadrant) {
     case 0x0:
