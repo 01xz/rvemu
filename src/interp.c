@@ -2,7 +2,7 @@
 #include "rvemu.h"
 #include "utils.h"
 
-static void (*handler[kNumInstr])(State*, RvInstr*) = {};
+static void (*handler[kRvInstrNum])(State*, RvInstr*) = {};
 
 void exec_block_interp(State* state) {
   static RvInstr instr = {0};

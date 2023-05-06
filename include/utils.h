@@ -21,6 +21,4 @@
 #define TO_HOST(addr) (addr + GUEST_MEMORY_OFFSET)
 #define TO_GUEST(addr) (addr - GUEST_MEMORY_OFFSET)
 
-#define QUADRANT(data) (((data) >> 0) & 0x3)
-
 #endif  // RVEMU_UTILS_H_

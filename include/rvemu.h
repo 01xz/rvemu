@@ -3,24 +3,29 @@
 
 #include <stdbool.h>
 
+#include "instr.h"
 #include "types.h"
 
-typedef enum {
-  kAddi,
-  kNumInstr,
-} RvInstrType;
-
 typedef struct {
+  union {
+    RvInstrR rtype;
+    RvInstrR4 r4type;
+    RvInstrI itype;
+    RvInstrS stype;
+    RvInstrB btype;
+    RvInstrU utype;
+    RvInstrJ jtype;
+    RvInstrGeneric gtype;
+    u32 raw;
+  };
   RvInstrType type;
-  i8 rs1;
-  i8 rs2;
-  i8 rd;
   i32 imm;
+  u16 csr;
   bool rvc;
   bool cont;
 } RvInstr;
 
-void instr_decode(RvInstr*, u32);
+void rv_instr_decode(RvInstr*, u32);
 
 typedef struct {
   u64 entry;
