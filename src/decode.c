@@ -68,8 +68,9 @@ void instr_decode(RvInstr* instr, u32 instr_raw) {
             default:
               UNREACHABLE();
           }  // switch funct3
-        }    // opcode case 0x0
           UNREACHABLE();
+        }  // opcode case 0x0
+
         case 0x1: {  // I-type
           switch (instr->itype.funct3) {
             case 0x2:  // FLW
@@ -81,8 +82,9 @@ void instr_decode(RvInstr* instr, u32 instr_raw) {
             default:
               UNREACHABLE();
           }  // switch funct3
-        }    // opcode case 0x1
           UNREACHABLE();
+        }  // opcode case 0x1
+
         case 0x3: {  // I-type
           switch (instr->itype.funct3) {
             case 0x0:  // FENCE
@@ -94,8 +96,9 @@ void instr_decode(RvInstr* instr, u32 instr_raw) {
             default:
               UNREACHABLE();
           }  // switch funct3
-        }    // opcode case 0x3
           UNREACHABLE();
+        }  // opcode case 0x3
+
         case 0x4: {  // I-type
           switch (instr->itype.funct3) {
             case 0x0:  // ADDI
@@ -135,13 +138,15 @@ void instr_decode(RvInstr* instr, u32 instr_raw) {
             default:
               UNREACHABLE();
           }  // switch funct3
-        }    // opcode case 0x4
           UNREACHABLE();
+        }  // opcode case 0x4
+
         case 0x5: {  // U-type: AUIPC
           instr->type = kAuipc;
           return;
-        }  // opcode case 0x5
           UNREACHABLE();
+        }  // opcode case 0x5
+
         case 0x6: {  // I-type
           switch (instr->itype.funct3) {
             case 0x0:  // ADDIW
@@ -163,8 +168,9 @@ void instr_decode(RvInstr* instr, u32 instr_raw) {
             default:
               UNREACHABLE();
           }  // switch funct3
-        }    // opcode case 0x6
           UNREACHABLE();
+        }  // opcode case 0x6
+
         case 0x8: {  // S-type
           switch (instr->stype.funct3) {
             case 0x0:  // SB
@@ -182,8 +188,9 @@ void instr_decode(RvInstr* instr, u32 instr_raw) {
             default:
               UNREACHABLE();
           }  // switch funct3
-        }    // opcode case 0x8
           UNREACHABLE();
+        }  // opcode case 0x8
+
         case 0x9: {  // S-type
           switch (instr->stype.funct3) {
             case 0x2:  // FSW
@@ -195,8 +202,9 @@ void instr_decode(RvInstr* instr, u32 instr_raw) {
             default:
               UNREACHABLE();
           }  // switch funct3
-        }    // case 0x9
           UNREACHABLE();
+        }  // case 0x9
+
         case 0xc: {  // R-type
           switch (instr->rtype.funct3) {
             case 0x0:
@@ -278,13 +286,15 @@ void instr_decode(RvInstr* instr, u32 instr_raw) {
             default:
               UNREACHABLE();
           }  // switch funct3
-        }    // case 0xc
           UNREACHABLE();
+        }  // case 0xc
+
         case 0xd: {  // U-type: LUI
           instr->type = kLui;
           return;
-        }  // case 0xd
           UNREACHABLE();
+        }  // case 0xd
+
         case 0xe: {  // R-type
           switch (instr->rtype.funct3) {
             case 0x0:
@@ -340,8 +350,9 @@ void instr_decode(RvInstr* instr, u32 instr_raw) {
             default:
               UNREACHABLE();
           }  // switch funct3
-        }    // case 0xe
           UNREACHABLE();
+        }  // case 0xe
+
         case 0x10: {  // R4-type
           switch (instr->r4type.funct2) {
             case 0x0:  // FMADD.S
@@ -353,8 +364,9 @@ void instr_decode(RvInstr* instr, u32 instr_raw) {
             default:
               UNREACHABLE();
           }  // switch funct2
-        }    // case 0x10
           UNREACHABLE();
+        }  // case 0x10
+
         case 0x11: {  // R4-type
           switch (instr->r4type.funct2) {
             case 0x0:  // FMSUB.S
@@ -366,8 +378,9 @@ void instr_decode(RvInstr* instr, u32 instr_raw) {
             default:
               UNREACHABLE();
           }  // switch funct2
-        }    // case 0x11
           UNREACHABLE();
+        }  // case 0x11
+
         case 0x12: {  // R4-type
           switch (instr->r4type.funct2) {
             case 0x0:  // FNMSUB.S
@@ -379,8 +392,9 @@ void instr_decode(RvInstr* instr, u32 instr_raw) {
             default:
               UNREACHABLE();
           }  // switch funct2
-        }    // case 0x12
           UNREACHABLE();
+        }  // case 0x12
+
         case 0x13: {  // R4-type
           switch (instr->r4type.funct2) {
             case 0x0:  // FNMADD.S
@@ -392,8 +406,9 @@ void instr_decode(RvInstr* instr, u32 instr_raw) {
             default:
               UNREACHABLE();
           }  // switch funct2
-        }    // case 0x13
           UNREACHABLE();
+        }  // case 0x13
+
         case 0x14: {
           switch (instr->rtype.funct7) {
             case 0x0:  // FADD.S
@@ -581,8 +596,9 @@ void instr_decode(RvInstr* instr, u32 instr_raw) {
             default:
               UNREACHABLE();
           }  // switch funct7
-        }    // case 0x14
           UNREACHABLE();
+        }  // case 0x14
+
         case 0x18: {  // B-type
           switch (instr->btype.funct3) {
             case 0x0:  // BEQ
@@ -606,18 +622,21 @@ void instr_decode(RvInstr* instr, u32 instr_raw) {
             default:
               UNREACHABLE();
           }  // switch funct3
-        }    // case 0x18
           UNREACHABLE();
+        }  // case 0x18
+
         case 0x19: {  // I-type: JALR
           instr->type = kJalr;
           return;
-        }  // case 0x19
           UNREACHABLE();
+        }  // case 0x19
+
         case 0x1b: {  // J-type: JAL
           instr->type = kJal;
           return;
-        }  // case 0x1b
           UNREACHABLE();
+        }  // case 0x1b
+
         case 0x1c: {  // I-type
           switch (instr->itype.funct3) {
             case 0x0:  // ECALL
@@ -642,13 +661,15 @@ void instr_decode(RvInstr* instr, u32 instr_raw) {
               instr->type = kCsrrci;
               return;
           }  // switch funct3
-        }    // case 0x1c
           UNREACHABLE();
+        }  // case 0x1c
+
         default:
           UNREACHABLE();
       }  // switch opcode
-    }    // quadrant case 0x3
       UNREACHABLE();
+    }  // quadrant case 0x3
+
     default:
       UNREACHABLE();
   }
