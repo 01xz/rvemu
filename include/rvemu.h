@@ -40,8 +40,8 @@ typedef enum {
   kNone,
   kDirectBranch,
   kIndirectBranch,
-  kSysCall,
-  kNumExitReason,
+  kECall,
+  kExitReasonNum,
 } ExitReason;
 
 typedef struct {

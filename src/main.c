@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
 
   while (true) {
     ExitReason reason = machine_step(&m);
-    assert(reason == kSysCall);
+    assert(reason == kECall);
   }
 
   return 0;

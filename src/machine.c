@@ -15,8 +15,8 @@ ExitReason machine_step(Machine* m) {
     }
     break;
   }
-  assert(m->state.exit_reason == kSysCall);
-  return kSysCall;
+  assert(m->state.exit_reason == kECall);
+  return kECall;
 }
 
 void machine_load_program(Machine* m, const char* prog) {
