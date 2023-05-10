@@ -41,8 +41,10 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
       FATAL("TODO");
       break;
     case 0x3: {  // not rvc
+      instr->rvc = false;
       switch (instr->gtype.opcode) {
         case 0x0: {  // I-type
+          instr->imm = get_i_type_imm(instr);
           switch (instr->itype.funct3) {
             case 0x0:  // LB
               instr->type = kLb;
@@ -72,6 +74,7 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
         }  // opcode case 0x0
 
         case 0x1: {  // I-type
+          instr->imm = get_i_type_imm(instr);
           switch (instr->itype.funct3) {
             case 0x2:  // FLW
               instr->type = kFlw;
@@ -86,6 +89,7 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
         }  // opcode case 0x1
 
         case 0x3: {  // I-type
+          instr->imm = get_i_type_imm(instr);
           switch (instr->itype.funct3) {
             case 0x0:  // FENCE
               instr->type = kFence;
@@ -100,12 +104,13 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
         }  // opcode case 0x3
 
         case 0x4: {  // I-type
+          instr->imm = get_i_type_imm(instr);
           switch (instr->itype.funct3) {
             case 0x0:  // ADDI
               instr->type = kAddi;
               return;
             case 0x1:
-              if (instr->gtype.inst31_25 == 0x0) {  // SLLI
+              if ((instr->gtype.instr31_25 >> 1) == 0x0) {  // SLLI
                 instr->type = kSlli;
               } else {
                 UNREACHABLE();
@@ -121,9 +126,9 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
               instr->type = kXori;
               return;
             case 0x5:
-              if (instr->gtype.inst31_25 == 0x0) {  // SRLI
+              if ((instr->gtype.instr31_25 >> 1) == 0x0) {  // SRLI
                 instr->type = kSrli;
-              } else if (instr->gtype.inst31_25 == 0x20) {  // SRAI
+              } else if ((instr->gtype.instr31_25 >> 1) == 0x10) {  // SRAI
                 instr->type = kSrai;
               } else {
                 UNREACHABLE();
@@ -142,24 +147,25 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
         }  // opcode case 0x4
 
         case 0x5: {  // U-type: AUIPC
+          instr->imm = get_u_type_imm(instr);
           instr->type = kAuipc;
           return;
-          UNREACHABLE();
         }  // opcode case 0x5
 
         case 0x6: {  // I-type
+          instr->imm = get_i_type_imm(instr);
           switch (instr->itype.funct3) {
             case 0x0:  // ADDIW
               instr->type = kAddiw;
               return;
             case 0x1:  // SLLIW
-              assert(instr->gtype.inst31_25 == 0x0);
+              assert(instr->gtype.instr31_25 == 0x0);
               instr->type = kSlliw;
               return;
             case 0x5:
-              if (instr->gtype.inst31_25 == 0x0) {  // SRLIW
+              if (instr->gtype.instr31_25 == 0x0) {  // SRLIW
                 instr->type = kSrliw;
-              } else if (instr->gtype.inst31_25 == 0x20) {  // SRAIW
+              } else if (instr->gtype.instr31_25 == 0x20) {  // SRAIW
                 instr->type = kSraiw;
               } else {
                 UNREACHABLE();
@@ -172,6 +178,7 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
         }  // opcode case 0x6
 
         case 0x8: {  // S-type
+          instr->imm = get_s_type_imm(instr);
           switch (instr->stype.funct3) {
             case 0x0:  // SB
               instr->type = kSb;
@@ -192,6 +199,7 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
         }  // opcode case 0x8
 
         case 0x9: {  // S-type
+          instr->imm = get_s_type_imm(instr);
           switch (instr->stype.funct3) {
             case 0x2:  // FSW
               instr->type = kFsw;
@@ -290,9 +298,9 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
         }  // case 0xc
 
         case 0xd: {  // U-type: LUI
+          instr->imm = get_u_type_imm(instr);
           instr->type = kLui;
           return;
-          UNREACHABLE();
         }  // case 0xd
 
         case 0xe: {  // R-type
@@ -600,6 +608,7 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
         }  // case 0x14
 
         case 0x18: {  // B-type
+          instr->imm = get_b_type_imm(instr);
           switch (instr->btype.funct3) {
             case 0x0:  // BEQ
               instr->type = kBeq;
@@ -626,18 +635,19 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
         }  // case 0x18
 
         case 0x19: {  // I-type: JALR
+          instr->imm = get_i_type_imm(instr);
           instr->type = kJalr;
           return;
-          UNREACHABLE();
         }  // case 0x19
 
         case 0x1b: {  // J-type: JAL
+          instr->imm = get_j_type_imm(instr);
           instr->type = kJal;
           return;
-          UNREACHABLE();
         }  // case 0x1b
 
         case 0x1c: {  // I-type
+          instr->imm = get_i_type_imm(instr);
           switch (instr->itype.funct3) {
             case 0x0:  // ECALL
               instr->type = kEcall;
@@ -660,6 +670,8 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
             case 0x7:  // CSRRCI
               instr->type = kCsrrci;
               return;
+            default:
+              UNREACHABLE();
           }  // switch funct3
           UNREACHABLE();
         }  // case 0x1c
