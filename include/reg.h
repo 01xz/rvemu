@@ -24,8 +24,8 @@ typedef enum {
 } FpRegType;
 
 typedef union {
-  u64 w64;
-  u32 w32;
+  u64 lu;
+  u32 wu;
   f64 d;
   f32 s;
 } FpReg;
