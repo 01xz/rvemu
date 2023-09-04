@@ -107,13 +107,13 @@ typedef struct {
 } RvInstrJ;
 
 typedef struct {
-  u32 quadrant  : 2;
-  u32 opcode    : 5;
-  u32           : 6;
-  u32 inst15_13 : 3;
-  u32           : 4;
-  u32 inst24_20 : 5;
-  u32 inst31_25 : 7;
+  u32 quadrant   : 2;
+  u32 opcode     : 5;
+  u32            : 6;
+  u32 instr15_13 : 3;
+  u32            : 4;
+  u32 instr24_20 : 5;
+  u32 instr31_25 : 7;
 } RvInstrGeneric;
 
 #endif  // RVEMU_INSTR_H_
