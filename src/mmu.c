@@ -1,11 +1,4 @@
-#include <assert.h>
-#include <stdio.h>
-#include <sys/mman.h>
-#include <unistd.h>
-
-#include "elfdef.h"
-#include "rvemu.h"
-#include "utils.h"
+#include "mmu.h"
 
 static void load_prog_header(ElfProgHeader* elf_prog_header_p,
                              ElfHeader* elf_header_p, i64 i, FILE* fp) {
@@ -84,4 +77,31 @@ void mmu_load_elf(Mmu* mmu, int fd) {
       mmu_load_segment(mmu, &elf_prog_header, fd);
     }
   }
+}
+
+u64 mmu_alloc(Mmu* mmu, i64 size) {
+  int page_size = getpagesize();
+  u64 base = mmu->alloc;
+  assert(base >= mmu->base);
+
+  mmu->alloc += size;
+  assert(mmu->alloc >= mmu->base);
+
+  if (size > 0 && mmu->alloc > TO_GUEST(mmu->host_alloc)) {
+    if (mmap((void*)mmu->host_alloc, ROUNDUP(size, page_size),
+             PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1,
+             0) == MAP_FAILED) {
+      FATAL("mmap failed");
+    }
+    mmu->host_alloc += ROUNDUP(size, page_size);
+  } else if (size < 0 &&
+             ROUNDUP(mmu->alloc, page_size) < TO_GUEST(mmu->host_alloc)) {
+    u64 len = TO_GUEST(mmu->host_alloc) - ROUNDUP(mmu->alloc, page_size);
+    if (munmap((void*)ROUNDUP(mmu->alloc, page_size), len) == -1) {
+      FATAL(strerror(errno));
+    }
+    mmu->host_alloc -= len;
+  }
+
+  return base;
 }
