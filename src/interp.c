@@ -8,31 +8,31 @@
   u64 addr = state->gp_regs[instr->itype.rs1] + (i64)instr->imm; \
   state->gp_regs[instr->itype.rd] = *(type*)TO_HOST(addr);
 
-static void handler_lb(State* const state, RvInstr* const instr) {
+static void handler_lb(State* state, const RvInstr* instr) {
   __HANDLER_LOAD(i8);
 }
 
-static void handler_lh(State* const state, RvInstr* const instr) {
+static void handler_lh(State* state, const RvInstr* instr) {
   __HANDLER_LOAD(i16);
 }
 
-static void handler_lw(State* const state, RvInstr* const instr) {
+static void handler_lw(State* state, const RvInstr* instr) {
   __HANDLER_LOAD(i32);
 }
 
-static void handler_ld(State* const state, RvInstr* const instr) {
+static void handler_ld(State* state, const RvInstr* instr) {
   __HANDLER_LOAD(i64);
 }
 
-static void handler_lbu(State* const state, RvInstr* const instr) {
+static void handler_lbu(State* state, const RvInstr* instr) {
   __HANDLER_LOAD(u8);
 }
 
-static void handler_lhu(State* const state, RvInstr* const instr) {
+static void handler_lhu(State* state, const RvInstr* instr) {
   __HANDLER_LOAD(u16);
 }
 
-static void handler_lwu(State* const state, RvInstr* const instr) {
+static void handler_lwu(State* state, const RvInstr* instr) {
   __HANDLER_LOAD(u32);
 }
 
@@ -40,19 +40,19 @@ static void handler_lwu(State* const state, RvInstr* const instr) {
   u64 addr = state->gp_regs[instr->stype.rs1] + (i64)instr->imm; \
   *(type*)TO_HOST(addr) = (type)state->gp_regs[instr->stype.rs2];
 
-static void handler_sb(State* const state, RvInstr* const instr) {
+static void handler_sb(State* state, const RvInstr* instr) {
   __HANDLER_STORE(i8);
 }
 
-static void handler_sh(State* const state, RvInstr* const instr) {
+static void handler_sh(State* state, const RvInstr* instr) {
   __HANDLER_STORE(i16);
 }
 
-static void handler_sw(State* const state, RvInstr* const instr) {
+static void handler_sw(State* state, const RvInstr* instr) {
   __HANDLER_STORE(i32);
 }
 
-static void handler_sd(State* const state, RvInstr* const instr) {
+static void handler_sd(State* state, const RvInstr* instr) {
   __HANDLER_STORE(i64);
 }
 
@@ -61,55 +61,55 @@ static void handler_sd(State* const state, RvInstr* const instr) {
   i64 imm = (i64)instr->imm;                  \
   state->gp_regs[instr->itype.rd] = (expr);
 
-static void handler_addi(State* const state, RvInstr* const instr) {
+static void handler_addi(State* state, const RvInstr* instr) {
   __HANDLER_I_ARITHMETIC(rs1 + imm);
 }
 
-static void handler_slli(State* const state, RvInstr* const instr) {
+static void handler_slli(State* state, const RvInstr* instr) {
   __HANDLER_I_ARITHMETIC(rs1 << (imm & 0x3f));
 }
 
-static void handler_slti(State* const state, RvInstr* const instr) {
+static void handler_slti(State* state, const RvInstr* instr) {
   __HANDLER_I_ARITHMETIC((i64)rs1 < (i64)imm);
 }
 
-static void handler_sltiu(State* const state, RvInstr* const instr) {
+static void handler_sltiu(State* state, const RvInstr* instr) {
   __HANDLER_I_ARITHMETIC((u64)rs1 < (u64)imm);
 }
 
-static void handler_xori(State* const state, RvInstr* const instr) {
+static void handler_xori(State* state, const RvInstr* instr) {
   __HANDLER_I_ARITHMETIC(rs1 ^ (u64)imm);
 }
 
-static void handler_srli(State* const state, RvInstr* const instr) {
+static void handler_srli(State* state, const RvInstr* instr) {
   __HANDLER_I_ARITHMETIC(rs1 >> (imm & 0x3f));
 }
 
-static void handler_srai(State* const state, RvInstr* const instr) {
+static void handler_srai(State* state, const RvInstr* instr) {
   __HANDLER_I_ARITHMETIC((i64)rs1 >> (imm & 0x3f));
 }
 
-static void handler_ori(State* const state, RvInstr* const instr) {
+static void handler_ori(State* state, const RvInstr* instr) {
   __HANDLER_I_ARITHMETIC(rs1 | (u64)imm);
 }
 
-static void handler_andi(State* const state, RvInstr* const instr) {
+static void handler_andi(State* state, const RvInstr* instr) {
   __HANDLER_I_ARITHMETIC(rs1 & (u64)imm);
 }
 
-static void handler_addiw(State* const state, RvInstr* const instr) {
+static void handler_addiw(State* state, const RvInstr* instr) {
   __HANDLER_I_ARITHMETIC((i64)(i32)(rs1 + imm));
 }
 
-static void handler_slliw(State* const state, RvInstr* const instr) {
+static void handler_slliw(State* state, const RvInstr* instr) {
   __HANDLER_I_ARITHMETIC((i64)(i32)(rs1 << (imm & 0x1f)));
 }
 
-static void handler_srliw(State* const state, RvInstr* const instr) {
+static void handler_srliw(State* state, const RvInstr* instr) {
   __HANDLER_I_ARITHMETIC((i64)(i32)((u32)rs1 >> (imm & 0x1f)));
 }
 
-static void handler_sraiw(State* const state, RvInstr* const instr) {
+static void handler_sraiw(State* state, const RvInstr* instr) {
   __HANDLER_I_ARITHMETIC((i64)((i32)rs1 >> (imm & 0x1f)));
 }
 
@@ -118,47 +118,47 @@ static void handler_sraiw(State* const state, RvInstr* const instr) {
   u64 rs2 = state->gp_regs[instr->rtype.rs2]; \
   state->gp_regs[instr->rtype.rd] = (expr);
 
-static void handler_add(State* const state, RvInstr* const instr) {
+static void handler_add(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC(rs1 + rs2);
 }
 
-static void handler_sub(State* const state, RvInstr* const instr) {
+static void handler_sub(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC(rs1 - rs2);
 }
 
-static void handler_sll(State* const state, RvInstr* const instr) {
+static void handler_sll(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC(rs1 << (rs2 & 0x3f));
 }
 
-static void handler_slt(State* const state, RvInstr* const instr) {
+static void handler_slt(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC((i64)rs1 < (i64)rs2);
 }
 
-static void handler_sltu(State* const state, RvInstr* const instr) {
+static void handler_sltu(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC((u64)rs1 < (u64)rs2);
 }
 
-static void handler_xor(State* const state, RvInstr* const instr) {
+static void handler_xor(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC(rs1 ^ rs2);
 }
 
-static void handler_srl(State* const state, RvInstr* const instr) {
+static void handler_srl(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC(rs1 >> (rs2 & 0x3f));
 }
 
-static void handler_sra(State* const state, RvInstr* const instr) {
+static void handler_sra(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC((i64)rs1 >> (rs2 & 0x3f));
 }
 
-static void handler_or(State* const state, RvInstr* const instr) {
+static void handler_or(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC(rs1 | rs2);
 }
 
-static void handler_and(State* const state, RvInstr* const instr) {
+static void handler_and(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC(rs1 & rs2);
 }
 
-static void handler_mul(State* const state, RvInstr* const instr) {
+static void handler_mul(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC(rs1 * rs2);
 }
 
@@ -182,15 +182,15 @@ static inline i64 __mulhsu(i64 a, u64 b) {
   return res - (b & (a >> 63));
 }
 
-static void handler_mulh(State* const state, RvInstr* const instr) {
+static void handler_mulh(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC(__mulh(rs1, rs2));
 }
 
-static void handler_mulhsu(State* const state, RvInstr* const instr) {
+static void handler_mulhsu(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC(__mulhsu(rs1, rs2));
 }
 
-static void handler_mulhu(State* const state, RvInstr* const instr) {
+static void handler_mulhu(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC(__mulhu(rs1, rs2));
 }
 
@@ -204,7 +204,7 @@ static inline i64 __div(i64 a, i64 b) {
   }
 }
 
-static void handler_div(State* const state, RvInstr* const instr) {
+static void handler_div(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC(__div(rs1, rs2));
 }
 
@@ -216,7 +216,7 @@ static inline u64 __divu(u64 a, u64 b) {
   }
 }
 
-static void handler_divu(State* const state, RvInstr* const instr) {
+static void handler_divu(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC(__divu(rs1, rs2));
 }
 
@@ -230,7 +230,7 @@ static inline i64 __rem(i64 a, i64 b) {
   }
 }
 
-static void handler_rem(State* const state, RvInstr* const instr) {
+static void handler_rem(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC(__rem(rs1, rs2));
 }
 
@@ -242,55 +242,55 @@ static inline u64 __remu(u64 a, u64 b) {
   }
 }
 
-static void handler_remu(State* const state, RvInstr* const instr) {
+static void handler_remu(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC(__remu(rs1, rs2));
 }
 
-static void handler_addw(State* const state, RvInstr* const instr) {
+static void handler_addw(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC((i64)(i32)(rs1 + rs2));
 }
 
-static void handler_subw(State* const state, RvInstr* const instr) {
+static void handler_subw(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC((i64)(i32)(rs1 - rs2));
 }
 
-static void handler_sllw(State* const state, RvInstr* const instr) {
+static void handler_sllw(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC((i64)(i32)(rs1 << (rs2 & 0x1f)));
 }
 
-static void handler_srlw(State* const state, RvInstr* const instr) {
+static void handler_srlw(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC((i64)(i32)((u32)rs1 >> (rs2 & 0x1f)));
 }
 
-static void handler_sraw(State* const state, RvInstr* const instr) {
+static void handler_sraw(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC((i64)(i32)((i32)rs1 >> (rs2 & 0x1f)));
 }
 
-static void handler_mulw(State* const state, RvInstr* const instr) {
+static void handler_mulw(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC((i64)(i32)(rs1 * rs2));
 }
 
-static void handler_divw(State* const state, RvInstr* const instr) {
+static void handler_divw(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC((i64)(i32)__div((i64)(i32)rs1, (i64)(i32)rs2));
 }
 
-static void handler_divuw(State* const state, RvInstr* const instr) {
+static void handler_divuw(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC((i64)(i32)__divu((u32)rs1, (u32)rs2));
 }
 
-static void handler_remw(State* const state, RvInstr* const instr) {
+static void handler_remw(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC((i64)(i32)__rem((i64)(i32)rs1, (i64)(i32)rs2));
 }
 
-static void handler_remuw(State* const state, RvInstr* const instr) {
+static void handler_remuw(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC((i64)(i32)__remu((u32)rs1, (u32)rs2));
 }
 
-static void handler_auipc(State* const state, RvInstr* const instr) {
+static void handler_auipc(State* state, const RvInstr* instr) {
   state->gp_regs[instr->utype.rd] = state->pc + (i64)instr->imm;
 }
 
-static void handler_lui(State* const state, RvInstr* const instr) {
+static void handler_lui(State* state, const RvInstr* instr) {
   state->gp_regs[instr->utype.rd] = (i64)instr->imm;
 }
 
@@ -299,51 +299,51 @@ static void handler_lui(State* const state, RvInstr* const instr) {
   u64 rs2 = state->gp_regs[instr->btype.rs2]; \
   if (condi) state->pc += (i64)instr->imm;
 
-static void handler_beq(State* const state, RvInstr* const instr) {
+static void handler_beq(State* state, const RvInstr* instr) {
   __HANDLER_BRANCH(rs1 == rs2);
 }
 
-static void handler_bne(State* const state, RvInstr* const instr) {
+static void handler_bne(State* state, const RvInstr* instr) {
   __HANDLER_BRANCH(rs1 != rs2);
 }
 
-static void handler_blt(State* const state, RvInstr* const instr) {
+static void handler_blt(State* state, const RvInstr* instr) {
   __HANDLER_BRANCH((i64)rs1 < (i64)rs2);
 }
 
-static void handler_bge(State* const state, RvInstr* const instr) {
+static void handler_bge(State* state, const RvInstr* instr) {
   __HANDLER_BRANCH((i64)rs1 >= (i64)rs2);
 }
 
-static void handler_bltu(State* const state, RvInstr* const instr) {
+static void handler_bltu(State* state, const RvInstr* instr) {
   __HANDLER_BRANCH(rs1 < rs2);
 }
 
-static void handler_bgeu(State* const state, RvInstr* const instr) {
+static void handler_bgeu(State* state, const RvInstr* instr) {
   __HANDLER_BRANCH(rs1 >= rs2);
 }
 
-static void handler_jalr(State* const state, RvInstr* const instr) {
+static void handler_jalr(State* state, const RvInstr* instr) {
   state->gp_regs[instr->itype.rd] = state->pc + (instr->rvc ? 2 : 4);
   state->re_enter_pc =
       (state->gp_regs[instr->itype.rs1] + (i64)instr->imm) & ~(u64)1;
   state->exit_reason = kIndirectBranch;
 }
 
-static void handler_jal(State* const state, RvInstr* const instr) {
+static void handler_jal(State* state, const RvInstr* instr) {
   state->gp_regs[instr->itype.rd] = state->pc + (instr->rvc ? 2 : 4);
   state->re_enter_pc = state->pc = state->pc + (i64)instr->imm;
   state->exit_reason = kDirectBranch;
 }
 
-static void handler_ecall(State* const state, RvInstr* const instr) {
+static void handler_ecall(State* state, const RvInstr* instr) {
   state->re_enter_pc = state->pc + 4;
   state->exit_reason = kECall;
 }
 
-static void handler_fence(State* const state, RvInstr* const instr) {}
+static void handler_fence(State* state, const RvInstr* instr) {}
 
-static void handler_fencei(State* const state, RvInstr* const instr) {}
+static void handler_fencei(State* state, const RvInstr* instr) {}
 
 #define __HANDLER_CSR()   \
   switch (instr->csr) {   \
@@ -356,36 +356,36 @@ static void handler_fencei(State* const state, RvInstr* const instr) {}
   }                       \
   state->gp_regs[instr->itype.rd] = 0;
 
-static void handler_csrrw(State* const state, RvInstr* const instr) {
+static void handler_csrrw(State* state, const RvInstr* instr) {
   __HANDLER_CSR();
 }
 
-static void handler_csrrs(State* const state, RvInstr* const instr) {
+static void handler_csrrs(State* state, const RvInstr* instr) {
   __HANDLER_CSR();
 }
 
-static void handler_csrrc(State* const state, RvInstr* const instr) {
+static void handler_csrrc(State* state, const RvInstr* instr) {
   __HANDLER_CSR();
 }
 
-static void handler_csrrwi(State* const state, RvInstr* const instr) {
+static void handler_csrrwi(State* state, const RvInstr* instr) {
   __HANDLER_CSR();
 }
 
-static void handler_csrrsi(State* const state, RvInstr* const instr) {
+static void handler_csrrsi(State* state, const RvInstr* instr) {
   __HANDLER_CSR();
 }
 
-static void handler_csrrci(State* const state, RvInstr* const instr) {
+static void handler_csrrci(State* state, const RvInstr* instr) {
   __HANDLER_CSR();
 }
 
-static void handler_flw(State* const state, RvInstr* const instr) {
+static void handler_flw(State* state, const RvInstr* instr) {
   u64 addr = state->gp_regs[instr->itype.rs1] + (i64)instr->imm;
   state->fp_regs[instr->itype.rd].wu = *(u32*)TO_HOST(addr);
 }
 
-static void handler_fld(State* const state, RvInstr* const instr) {
+static void handler_fld(State* state, const RvInstr* instr) {
   u64 addr = state->gp_regs[instr->itype.rs1] + (i64)instr->imm;
   state->fp_regs[instr->itype.rd].lu = *(u64*)TO_HOST(addr);
 }
@@ -394,11 +394,11 @@ static void handler_fld(State* const state, RvInstr* const instr) {
   u64 addr = state->gp_regs[instr->stype.rs1] + (i64)instr->imm; \
   *(type*)TO_HOST(addr) = (type)state->fp_regs[instr->stype.rs2].lu;
 
-static void handler_fsw(State* const state, RvInstr* const instr) {
+static void handler_fsw(State* state, const RvInstr* instr) {
   __HANDLER_STORE_F(u32);
 }
 
-static void handler_fsd(State* const state, RvInstr* const instr) {
+static void handler_fsd(State* state, const RvInstr* instr) {
   __HANDLER_STORE_F(u64);
 }
 
@@ -407,31 +407,31 @@ static void handler_fsd(State* const state, RvInstr* const instr) {
   __attribute__((unused)) f32 rs2 = state->fp_regs[instr->rtype.rs2].s; \
   state->fp_regs[instr->rtype.rd].s = (f32)(expr);
 
-static void handler_fadd_s(State* const state, RvInstr* const instr) {
+static void handler_fadd_s(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_S(rs1 + rs2);
 }
 
-static void handler_fsub_s(State* const state, RvInstr* const instr) {
+static void handler_fsub_s(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_S(rs1 - rs2);
 }
 
-static void handler_fmul_s(State* const state, RvInstr* const instr) {
+static void handler_fmul_s(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_S(rs1 * rs2);
 }
 
-static void handler_fdiv_s(State* const state, RvInstr* const instr) {
+static void handler_fdiv_s(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_S(rs1 / rs2);
 }
 
-static void handler_fsqrt_s(State* const state, RvInstr* const instr) {
+static void handler_fsqrt_s(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_S(sqrtf(rs1));
 }
 
-static void handler_fmin_s(State* const state, RvInstr* const instr) {
+static void handler_fmin_s(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_S(rs1 < rs2 ? rs1 : rs2);
 }
 
-static void handler_fmax_s(State* const state, RvInstr* const instr) {
+static void handler_fmax_s(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_S(rs1 > rs2 ? rs1 : rs2);
 }
 
@@ -446,15 +446,15 @@ static inline u32 __sgnj_s(u32 a, u32 b, bool n, bool x) {
   u32 rs2 = state->fp_regs[instr->rtype.rs2].wu; \
   state->fp_regs[instr->rtype.rd].wu = __sgnj_s(rs1, rs2, n, x);
 
-static void handler_fsgnj_s(State* const state, RvInstr* const instr) {
+static void handler_fsgnj_s(State* state, const RvInstr* instr) {
   __HANDLER_SGNJ_S(false, false);
 }
 
-static void handler_fsgnjn_s(State* const state, RvInstr* const instr) {
+static void handler_fsgnjn_s(State* state, const RvInstr* instr) {
   __HANDLER_SGNJ_S(true, false);
 }
 
-static void handler_fsgnjx_s(State* const state, RvInstr* const instr) {
+static void handler_fsgnjx_s(State* state, const RvInstr* instr) {
   __HANDLER_SGNJ_S(false, true);
 }
 
@@ -463,31 +463,31 @@ static void handler_fsgnjx_s(State* const state, RvInstr* const instr) {
   __attribute__((unused)) f64 rs2 = state->fp_regs[instr->rtype.rs2].d; \
   state->fp_regs[instr->rtype.rd].d = (expr);
 
-static void handler_fadd_d(State* const state, RvInstr* const instr) {
+static void handler_fadd_d(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_D(rs1 + rs2);
 }
 
-static void handler_fsub_d(State* const state, RvInstr* const instr) {
+static void handler_fsub_d(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_D(rs1 + rs2);
 }
 
-static void handler_fmul_d(State* const state, RvInstr* const instr) {
+static void handler_fmul_d(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_D(rs1 + rs2);
 }
 
-static void handler_fdiv_d(State* const state, RvInstr* const instr) {
+static void handler_fdiv_d(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_D(rs1 + rs2);
 }
 
-static void handler_fsqrt_d(State* const state, RvInstr* const instr) {
+static void handler_fsqrt_d(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_D(sqrt(rs1));
 }
 
-static void handler_fmin_d(State* const state, RvInstr* const instr) {
+static void handler_fmin_d(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_D(rs1 < rs2 ? rs1 : rs2);
 }
 
-static void handler_fmax_d(State* const state, RvInstr* const instr) {
+static void handler_fmax_d(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_D(rs1 > rs2 ? rs1 : rs2);
 }
 
@@ -502,15 +502,15 @@ static inline u64 __sgnj_d(u64 a, u64 b, bool n, bool x) {
   u64 rs2 = state->fp_regs[instr->rtype.rs2].lu; \
   state->fp_regs[instr->rtype.rd].lu = __sgnj_d(rs1, rs2, n, x);
 
-static void handler_fsgnj_d(State* const state, RvInstr* const instr) {
+static void handler_fsgnj_d(State* state, const RvInstr* instr) {
   __HANDLER_SGNJ_D(false, false);
 }
 
-static void handler_fsgnjn_d(State* const state, RvInstr* const instr) {
+static void handler_fsgnjn_d(State* state, const RvInstr* instr) {
   __HANDLER_SGNJ_D(true, false);
 }
 
-static void handler_fsgnjx_d(State* const state, RvInstr* const instr) {
+static void handler_fsgnjx_d(State* state, const RvInstr* instr) {
   __HANDLER_SGNJ_D(false, true);
 }
 
@@ -520,19 +520,19 @@ static void handler_fsgnjx_d(State* const state, RvInstr* const instr) {
   f32 rs3 = state->fp_regs[instr->r4type.rs3].s; \
   state->fp_regs[instr->r4type.rd].s = (f32)(expr);
 
-static void handler_fmadd_s(State* const state, RvInstr* const instr) {
+static void handler_fmadd_s(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_FUSED_S(rs1 * rs2 + rs3);
 }
 
-static void handler_fmsub_s(State* const state, RvInstr* const instr) {
+static void handler_fmsub_s(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_FUSED_S(rs1 * rs2 - rs3);
 }
 
-static void handler_fnmsub_s(State* const state, RvInstr* const instr) {
+static void handler_fnmsub_s(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_FUSED_S(-(rs1 * rs2) - rs3);
 }
 
-static void handler_fnmadd_s(State* const state, RvInstr* const instr) {
+static void handler_fnmadd_s(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_FUSED_S(-(rs1 * rs2) + rs3);
 }
 
@@ -542,19 +542,19 @@ static void handler_fnmadd_s(State* const state, RvInstr* const instr) {
   f64 rs3 = state->fp_regs[instr->r4type.rs3].d; \
   state->fp_regs[instr->r4type.rd].d = (expr);
 
-static void handler_fmadd_d(State* const state, RvInstr* const instr) {
+static void handler_fmadd_d(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_FUSED_D(rs1 * rs2 + rs3);
 }
 
-static void handler_fmsub_d(State* const state, RvInstr* const instr) {
+static void handler_fmsub_d(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_FUSED_D(rs1 * rs2 - rs3);
 }
 
-static void handler_fnmsub_d(State* const state, RvInstr* const instr) {
+static void handler_fnmsub_d(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_FUSED_D(-(rs1 * rs2) - rs3);
 }
 
-static void handler_fnmadd_d(State* const state, RvInstr* const instr) {
+static void handler_fnmadd_d(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_FUSED_D(-(rs1 * rs2) + rs3);
 }
 
@@ -563,15 +563,15 @@ static void handler_fnmadd_d(State* const state, RvInstr* const instr) {
   f32 rs2 = state->fp_regs[instr->rtype.rs2].s; \
   state->gp_regs[instr->rtype.rd] = (u64)(expr);
 
-static void handler_fle_s(State* const state, RvInstr* const instr) {
+static void handler_fle_s(State* state, const RvInstr* instr) {
   __HANDLER_R_COMPARE_S(rs1 <= rs2);
 }
 
-static void handler_flt_s(State* const state, RvInstr* const instr) {
+static void handler_flt_s(State* state, const RvInstr* instr) {
   __HANDLER_R_COMPARE_S(rs1 < rs2);
 }
 
-static void handler_feq_s(State* const state, RvInstr* const instr) {
+static void handler_feq_s(State* state, const RvInstr* instr) {
   __HANDLER_R_COMPARE_S(rs1 == rs2);
 }
 
@@ -580,120 +580,120 @@ static void handler_feq_s(State* const state, RvInstr* const instr) {
   f64 rs2 = state->fp_regs[instr->rtype.rs2].d; \
   state->gp_regs[instr->rtype.rd] = (u64)(expr);
 
-static void handler_fle_d(State* const state, RvInstr* const instr) {
+static void handler_fle_d(State* state, const RvInstr* instr) {
   __HANDLER_R_COMPARE_D(rs1 <= rs2);
 }
 
-static void handler_flt_d(State* const state, RvInstr* const instr) {
+static void handler_flt_d(State* state, const RvInstr* instr) {
   __HANDLER_R_COMPARE_D(rs1 < rs2);
 }
 
-static void handler_feq_d(State* const state, RvInstr* const instr) {
+static void handler_feq_d(State* state, const RvInstr* instr) {
   __HANDLER_R_COMPARE_D(rs1 == rs2);
 }
 
-static void handler_fcvt_s_d(State* const state, RvInstr* const instr) {
+static void handler_fcvt_s_d(State* state, const RvInstr* instr) {
   state->fp_regs[instr->rtype.rd].s = (f32)state->fp_regs[instr->rtype.rs1].d;
 }
 
-static void handler_fcvt_d_s(State* const state, RvInstr* const instr) {
+static void handler_fcvt_d_s(State* state, const RvInstr* instr) {
   state->fp_regs[instr->rtype.rd].d = (f64)state->fp_regs[instr->rtype.rs1].s;
 }
 
-static void handler_fcvt_w_s(State* const state, RvInstr* const instr) {
+static void handler_fcvt_w_s(State* state, const RvInstr* instr) {
   state->gp_regs[instr->rtype.rd] =
       (i64)(i32)llrintf(state->fp_regs[instr->rtype.rs1].s);
 }
 
-static void handler_fcvt_wu_s(State* const state, RvInstr* const instr) {
+static void handler_fcvt_wu_s(State* state, const RvInstr* instr) {
   state->gp_regs[instr->rtype.rd] =
       (i64)(i32)(u32)llrintf(state->fp_regs[instr->rtype.rs1].s);
 }
 
-static void handler_fcvt_l_s(State* const state, RvInstr* const instr) {
+static void handler_fcvt_l_s(State* state, const RvInstr* instr) {
   state->gp_regs[instr->rtype.rd] =
       (i64)llrintf(state->fp_regs[instr->rtype.rs1].s);
 }
 
-static void handler_fcvt_lu_s(State* const state, RvInstr* const instr) {
+static void handler_fcvt_lu_s(State* state, const RvInstr* instr) {
   state->gp_regs[instr->rtype.rd] =
       (u64)llrintf(state->fp_regs[instr->rtype.rs1].s);
 }
 
-static void handler_fcvt_s_w(State* const state, RvInstr* const instr) {
+static void handler_fcvt_s_w(State* state, const RvInstr* instr) {
   state->fp_regs[instr->rtype.rd].s =
       (f32)(i32)state->gp_regs[instr->rtype.rs1];
 }
 
-static void handler_fcvt_s_wu(State* const state, RvInstr* const instr) {
+static void handler_fcvt_s_wu(State* state, const RvInstr* instr) {
   state->fp_regs[instr->rtype.rd].s =
       (f32)(u32)state->gp_regs[instr->rtype.rs1];
 }
 
-static void handler_fcvt_s_l(State* const state, RvInstr* const instr) {
+static void handler_fcvt_s_l(State* state, const RvInstr* instr) {
   state->fp_regs[instr->rtype.rd].s =
       (f32)(i64)state->gp_regs[instr->rtype.rs1];
 }
 
-static void handler_fcvt_s_lu(State* const state, RvInstr* const instr) {
+static void handler_fcvt_s_lu(State* state, const RvInstr* instr) {
   state->fp_regs[instr->rtype.rd].s =
       (f32)(u64)state->gp_regs[instr->rtype.rs1];
 }
 
-static void handler_fcvt_w_d(State* const state, RvInstr* const instr) {
+static void handler_fcvt_w_d(State* state, const RvInstr* instr) {
   state->gp_regs[instr->rtype.rd] =
       (i64)(i32)llrintf(state->fp_regs[instr->rtype.rs1].d);
 }
 
-static void handler_fcvt_wu_d(State* const state, RvInstr* const instr) {
+static void handler_fcvt_wu_d(State* state, const RvInstr* instr) {
   state->gp_regs[instr->rtype.rd] =
       (i64)(i32)(u32)llrintf(state->fp_regs[instr->rtype.rs1].d);
 }
 
-static void handler_fcvt_l_d(State* const state, RvInstr* const instr) {
+static void handler_fcvt_l_d(State* state, const RvInstr* instr) {
   state->gp_regs[instr->rtype.rd] =
       (i64)llrintf(state->fp_regs[instr->rtype.rs1].d);
 }
 
-static void handler_fcvt_lu_d(State* const state, RvInstr* const instr) {
+static void handler_fcvt_lu_d(State* state, const RvInstr* instr) {
   state->gp_regs[instr->rtype.rd] =
       (u64)llrintf(state->fp_regs[instr->rtype.rs1].d);
 }
 
-static void handler_fcvt_d_w(State* const state, RvInstr* const instr) {
+static void handler_fcvt_d_w(State* state, const RvInstr* instr) {
   state->fp_regs[instr->rtype.rd].d =
       (f64)(i32)state->gp_regs[instr->rtype.rs1];
 }
 
-static void handler_fcvt_d_wu(State* const state, RvInstr* const instr) {
+static void handler_fcvt_d_wu(State* state, const RvInstr* instr) {
   state->fp_regs[instr->rtype.rd].d =
       (f64)(u32)state->gp_regs[instr->rtype.rs1];
 }
 
-static void handler_fcvt_d_l(State* const state, RvInstr* const instr) {
+static void handler_fcvt_d_l(State* state, const RvInstr* instr) {
   state->fp_regs[instr->rtype.rd].d =
       (f64)(i64)state->gp_regs[instr->rtype.rs1];
 }
 
-static void handler_fcvt_d_lu(State* const state, RvInstr* const instr) {
+static void handler_fcvt_d_lu(State* state, const RvInstr* instr) {
   state->fp_regs[instr->rtype.rd].d =
       (f64)(u64)state->gp_regs[instr->rtype.rs1];
 }
 
-static void handler_fmv_x_w(State* const state, RvInstr* const instr) {
+static void handler_fmv_x_w(State* state, const RvInstr* instr) {
   state->gp_regs[instr->rtype.rd] =
       (u64)(i64)(i32)state->fp_regs[instr->rtype.rs1].wu;
 }
 
-static void handler_fmv_w_x(State* const state, RvInstr* const instr) {
+static void handler_fmv_w_x(State* state, const RvInstr* instr) {
   state->fp_regs[instr->rtype.rd].wu = (u32)state->gp_regs[instr->rtype.rs1];
 }
 
-static void handler_fmv_x_d(State* const state, RvInstr* const instr) {
+static void handler_fmv_x_d(State* state, const RvInstr* instr) {
   state->gp_regs[instr->rtype.rd] = state->fp_regs[instr->rtype.rs1].lu;
 }
 
-static void handler_fmv_d_x(State* const state, RvInstr* const instr) {
+static void handler_fmv_d_x(State* state, const RvInstr* instr) {
   state->fp_regs[instr->rtype.rd].lu = state->gp_regs[instr->rtype.rs1];
 }
 
@@ -727,7 +727,7 @@ static inline u64 __classify_s(f32 in) {
          (is_nan && !is_signaling_nan)          << 9;
 }
 
-static void handler_fclass_s(State* const state, RvInstr* const instr) {
+static void handler_fclass_s(State* state, const RvInstr* instr) {
   state->gp_regs[instr->rtype.rd] =
       __classify_s(state->fp_regs[instr->rtype.rs1].s);
 }
@@ -762,12 +762,12 @@ static inline u64 __classify_d(f64 in) {
          (is_nan && !is_signaling_nan)          << 9;
 }
 
-static void handler_fclass_d(State* const state, RvInstr* const instr) {
+static void handler_fclass_d(State* state, const RvInstr* instr) {
   state->gp_regs[instr->rtype.rd] =
       __classify_d(state->fp_regs[instr->rtype.rs1].d);
 }
 
-static void (*handler[kRvInstrNum])(State* const, RvInstr* const) = {
+static void (*handler[kRvInstrNum])(State*, const RvInstr*) = {
     [kLb] = handler_lb,
     [kLh] = handler_lh,
     [kLw] = handler_lw,
