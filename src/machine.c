@@ -1,5 +1,13 @@
 #include "machine.h"
 
+#include <assert.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdbool.h>
+#include <unistd.h>
+
+#include "utils.h"
+
 ExitReason machine_step(Machine* m) {
   while (true) {
     m->state.exit_reason = kNone;
