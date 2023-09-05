@@ -1,15 +1,7 @@
 #ifndef RVEMU_MMU_H_
 #define RVEMU_MMU_H_
 
-#include <assert.h>
-#include <errno.h>
-#include <stdio.h>
-#include <sys/mman.h>
-#include <unistd.h>
-
-#include "elfdef.h"
 #include "types.h"
-#include "utils.h"
 
 typedef struct {
   u64 entry;

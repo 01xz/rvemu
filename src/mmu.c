@@ -1,5 +1,14 @@
 #include "mmu.h"
 
+#include <assert.h>
+#include <errno.h>
+#include <stdio.h>
+#include <sys/mman.h>
+#include <unistd.h>
+
+#include "elfdef.h"
+#include "utils.h"
+
 static void load_prog_header(ElfProgHeader* elf_prog_header_p,
                              ElfHeader* elf_header_p, i64 i, FILE* fp) {
   if (fseek(fp, elf_header_p->e_phoff + elf_header_p->e_phentsize * i,
