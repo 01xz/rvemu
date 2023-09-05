@@ -1,6 +1,7 @@
+#include "decode.h"
+
 #include <assert.h>
 
-#include "rvemu.h"
 #include "utils.h"
 
 static inline i32 get_i_type_imm(const RvInstr* instr) {
