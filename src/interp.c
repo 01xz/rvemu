@@ -1,7 +1,9 @@
-#include <math.h>
+#include "interp.h"
 
-#include "reg.h"
-#include "rvemu.h"
+#include <math.h>
+#include <stdbool.h>
+
+#include "decode.h"
 #include "utils.h"
 
 #define __HANDLER_LOAD(type)                                     \
