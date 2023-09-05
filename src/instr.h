@@ -114,6 +114,6 @@ typedef struct {
   u32            : 4;
   u32 instr24_20 : 5;
   u32 instr31_25 : 7;
-} RvInstrGeneric;
+} RvInstrG;
 
 #endif  // RVEMU_INSTR_H_
