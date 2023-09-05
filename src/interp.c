@@ -707,8 +707,7 @@ static inline u64 __classify_s(f32 in) {
       u32 frac : 23;
     } w;
     f32 s;
-  } un;
-  un.s = in;
+  } un = {.s = in};
 
   bool sign = un.w.sign;
   bool inf_or_nan = (un.w.exp == 0xff);
@@ -742,8 +741,7 @@ static inline u64 __classify_d(f64 in) {
       u64 frac : 52;
     } l;
     f64 d;
-  } un;
-  un.d = in;
+  } un = {.d = in};
 
   bool sign = un.l.sign;
   bool inf_or_nan = (un.l.exp == 0x7ff);
