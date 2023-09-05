@@ -1,7 +1,8 @@
 #include <assert.h>
-#include <stdio.h>
+#include <stdbool.h>
 
-#include "rvemu.h"
+#include "interp.h"
+#include "machine.h"
 
 int main(int argc, char* argv[]) {
   assert(argc > 1);
