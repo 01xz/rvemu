@@ -3,6 +3,8 @@
 
 #include "interp.h"
 #include "machine.h"
+#include "reg.h"
+#include "syscall.h"
 
 int main(int argc, char* argv[]) {
   assert(argc > 1);
@@ -14,6 +16,10 @@ int main(int argc, char* argv[]) {
   while (true) {
     ExitReason reason = machine_step(&m);
     assert(reason == kECall);
+
+    u64 syscall = machine_get_regx(&m, kA7);
+    u64 ret = do_syscall(&m, syscall);
+    machine_set_regx(&m, kA0, ret);
   }
 
   return 0;
