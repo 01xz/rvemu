@@ -17,4 +17,14 @@ void machine_setup(Machine*, int, char**);
 
 ExitReason machine_step(Machine*);
 
+inline u64 machine_get_regx(Machine* m, int reg) {
+  assert(reg > 0 && reg <= kGpRegNum);
+  return m->state.gp_regs[reg];
+}
+
+inline void machine_set_regx(Machine* m, int reg, u64 reg_val) {
+  assert(reg > 0 && reg <= kGpRegNum);
+  m->state.gp_regs[reg] = reg_val;
+}
+
 #endif  // RVEMU_MACHINE_H_
