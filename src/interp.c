@@ -767,7 +767,7 @@ static void handler_fclass_d(State* state, const RvInstr* instr) {
       __classify_d(state->fp_regs[instr->rtype.rs1].d);
 }
 
-static void (*handler[kRvInstrNum])(State*, const RvInstr*) = {
+static void (*rv_instr_handler[kRvInstrNum])(State*, const RvInstr*) = {
     [kLb] = handler_lb,
     [kLh] = handler_lh,
     [kLw] = handler_lw,
@@ -908,7 +908,7 @@ void exec_block_interp(State* state) {
   while (true) {
     u32 instr_raw = *(u32*)TO_HOST(state->pc);
     rv_instr_decode(&instr, instr_raw);
-    handler[instr.type](state, &instr);
+    rv_instr_handler[instr.type](state, &instr);
 
     state->gp_regs[kZero] = 0;
 
