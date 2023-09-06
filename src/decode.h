@@ -1,5 +1,5 @@
-#ifndef RVEMU_DECODE_H
-#define RVEMU_DECODE_H
+#ifndef RVEMU_DECODE_H_
+#define RVEMU_DECODE_H_
 
 #include <stdbool.h>
 
@@ -27,4 +27,4 @@ typedef struct {
 
 void rv_instr_decode(RvInstr*, u32);
 
-#endif  // RVEMU_DECODE_H
+#endif  // RVEMU_DECODE_H_

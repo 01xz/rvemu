@@ -1,5 +1,5 @@
-#ifndef RVEMU_INTERP_H
-#define RVEMU_INTERP_H
+#ifndef RVEMU_INTERP_H_
+#define RVEMU_INTERP_H_
 
 #include "reg.h"
 #include "types.h"
@@ -22,4 +22,4 @@ typedef struct {
 
 void exec_block_interp(State*);
 
-#endif  // RVEMU_INTERP_H
+#endif  // RVEMU_INTERP_H_
