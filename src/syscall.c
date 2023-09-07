@@ -76,14 +76,14 @@ static u64 (*rv_syscall_handler[])(Machine*) = {
 };
 
 static u64 (*rv_old_syscall_handler[])(Machine*) = {
-    [kSysOpen] = handler_ni_syscall,
-    [kSysLink] = handler_ni_syscall,
-    [kSysUnlink] = handler_ni_syscall,
-    [kSysMkdir] = handler_ni_syscall,
-    [kSysAccess] = handler_ni_syscall,
-    [kSysStat] = handler_ni_syscall,
-    [kSysLstat] = handler_ni_syscall,
-    [kSysTime] = handler_ni_syscall,
+    [kSysOpen - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
+    [kSysLink - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
+    [kSysUnlink - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
+    [kSysMkdir - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
+    [kSysAccess - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
+    [kSysStat - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
+    [kSysLstat - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
+    [kSysTime - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
 };
 
 #define RVEMU_SYSCALL_ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
