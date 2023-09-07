@@ -1,6 +1,8 @@
 #ifndef RVEMU_MACHINE_H_
 #define RVEMU_MACHINE_H_
 
+#include <assert.h>
+
 #include "interp.h"
 #include "mmu.h"
 
