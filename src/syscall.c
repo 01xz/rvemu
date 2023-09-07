@@ -13,7 +13,7 @@ static u64 handler_fstat(Machine* m) {
   return fstat(fd, (struct stat*)TO_HOST(addr));  // <sys/stat.h>
 }
 
-static u64 handler_ni_syscall(const Machine* m) {
+static u64 handler_ni_syscall(Machine* m) {
   FATALF("ni syscall: %lu", machine_get_regx(m, kA7));
 }
 
