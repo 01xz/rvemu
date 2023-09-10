@@ -52,7 +52,6 @@ static u64 (*rv_syscall_handler[])(Machine*) = {
     [kSysMremap] = handler_ni_syscall,
     [kSysMprotect] = handler_ni_syscall,
     [kSysPrlimit64] = handler_ni_syscall,
-    [kSysGetmainvars] = handler_ni_syscall,
     [kSysRtSigaction] = handler_ni_syscall,
     [kSysWritev] = handler_ni_syscall,
     [kSysGettimeofday] = handler_ni_syscall,
@@ -96,6 +95,8 @@ u64 do_syscall(Machine* m, u64 syscall) {
   } else if (syscall - OLD_SYSCALL_THRESHOLD <
              RVEMU_SYSCALL_ARRAY_SIZE(rv_old_syscall_handler)) {
     handler = rv_old_syscall_handler[syscall - OLD_SYSCALL_THRESHOLD];
+  } else if (syscall == kSysGetmainvars) {
+    handler = handler_ni_syscall;
   }
 
   if (!handler) {
