@@ -107,6 +107,84 @@ typedef struct {
 } RvInstrJ;
 
 typedef struct {
+  u32        : 16;
+  u32 funct4 : 4;
+  u32 rs1    : 5;
+  u32 rs2    : 5;
+  u32 op     : 2;
+} RvInstrCR;
+
+typedef struct {
+  u32        : 16;
+  u32 funct3 : 3;
+  u32 imm1   : 1;
+  u32 rs1    : 5;
+  u32 imm5   : 5;
+  u32 op     : 2;
+} RvInstrCI;
+
+typedef struct {
+  u32        : 16;
+  u32 funct3 : 3;
+  u32 imm    : 6;
+  u32 rs2    : 5;
+  u32 op     : 2;
+} RvInstrCSS;
+
+typedef struct {
+  u32        : 16;
+  u32 funct3 : 3;
+  u32 imm    : 8;
+  u32 rd     : 3;
+  u32 op     : 2;
+} RvInstrCIW;
+
+typedef struct {
+  u32        : 16;
+  u32 funct3 : 3;
+  u32 imm3   : 3;
+  u32 rs1    : 3;
+  u32 imm2   : 2;
+  u32 rd     : 3;
+  u32 op     : 2;
+} RvInstrCL;
+
+typedef struct {
+  u32        : 16;
+  u32 funct3 : 3;
+  u32 imm3   : 3;
+  u32 rs1    : 3;
+  u32 imm2   : 2;
+  u32 rs2    : 3;
+  u32 op     : 2;
+} RvInstrCS;
+
+typedef struct {
+  u32        : 16;
+  u32 funct6 : 6;
+  u32 rs1    : 3;
+  u32 funct2 : 2;
+  u32 rs2    : 3;
+  u32 op     : 2;
+} RvInstrCA;
+
+typedef struct {
+  u32         : 16;
+  u32 funct3  : 3;
+  u32 offset3 : 3;
+  u32 rs1     : 3;
+  u32 offset5 : 5;
+  u32 op      : 2;
+} RvInstrCB;
+
+typedef struct {
+  u32        : 16;
+  u32 funct3 : 3;
+  u32 target : 11;
+  u32 op     : 2;
+} RvInstrCJ;
+
+typedef struct {
   u32 quadrant   : 2;
   u32 opcode     : 5;
   u32            : 6;
