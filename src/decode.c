@@ -368,9 +368,9 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               instr->type = kLwu;
               return;
             default:
-              UNREACHABLE();
+              __builtin_unreachable();
           }  // switch funct3
-          UNREACHABLE();
+          __builtin_unreachable();
         }  // opcode case 0x0
 
         case 0x1: {  // I-type
@@ -383,9 +383,9 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               instr->type = kFld;
               return;
             default:
-              UNREACHABLE();
+              __builtin_unreachable();
           }  // switch funct3
-          UNREACHABLE();
+          __builtin_unreachable();
         }  // opcode case 0x1
 
         case 0x3: {  // I-type
@@ -398,9 +398,9 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               instr->type = kFenceI;
               return;
             default:
-              UNREACHABLE();
+              __builtin_unreachable();
           }  // switch funct3
-          UNREACHABLE();
+          __builtin_unreachable();
         }  // opcode case 0x3
 
         case 0x4: {  // I-type
@@ -413,7 +413,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               if ((un.gtype.instr31_25 >> 1) == 0x0) {  // SLLI
                 instr->type = kSlli;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x2:  // SLTI
@@ -431,7 +431,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else if ((un.gtype.instr31_25 >> 1) == 0x10) {  // SRAI
                 instr->type = kSrai;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x6:  // ORI
@@ -441,9 +441,9 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               instr->type = kAndi;
               return;
             default:
-              UNREACHABLE();
+              __builtin_unreachable();
           }  // switch funct3
-          UNREACHABLE();
+          __builtin_unreachable();
         }  // opcode case 0x4
 
         case 0x5: {  // U-type: AUIPC
@@ -468,13 +468,13 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else if (un.gtype.instr31_25 == 0x20) {  // SRAIW
                 instr->type = kSraiw;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             default:
-              UNREACHABLE();
+              __builtin_unreachable();
           }  // switch funct3
-          UNREACHABLE();
+          __builtin_unreachable();
         }  // opcode case 0x6
 
         case 0x8: {  // S-type
@@ -493,9 +493,9 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               instr->type = kSd;
               return;
             default:
-              UNREACHABLE();
+              __builtin_unreachable();
           }  // switch funct3
-          UNREACHABLE();
+          __builtin_unreachable();
         }  // opcode case 0x8
 
         case 0x9: {  // S-type
@@ -508,9 +508,9 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               instr->type = kFsd;
               return;
             default:
-              UNREACHABLE();
+              __builtin_unreachable();
           }  // switch funct3
-          UNREACHABLE();
+          __builtin_unreachable();
         }  // case 0x9
 
         case 0xc: {  // R-type
@@ -524,7 +524,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else if (un.rtype.funct7 == 0x20) {  // SUB
                 instr->type = kSub;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x1:
@@ -533,7 +533,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else if (un.rtype.funct7 == 0x1) {  // MULH
                 instr->type = kMulh;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x2:
@@ -542,7 +542,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else if (un.rtype.funct7 == 0x1) {  // MULHSU
                 instr->type = kMulhsu;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x3:
@@ -551,7 +551,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else if (un.rtype.funct7 == 0x1) {  // MULHU
                 instr->type = kMulhu;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x4:
@@ -560,7 +560,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else if (un.rtype.funct7 == 0x1) {  // DIV
                 instr->type = kDiv;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x5:
@@ -571,7 +571,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else if (un.rtype.funct7 == 0x20) {  // SRA
                 instr->type = kSra;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x6:
@@ -580,7 +580,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else if (un.rtype.funct7 == 0x1) {  // REM
                 instr->type = kRem;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x7:
@@ -589,13 +589,13 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else if (un.rtype.funct7 == 0x1) {  // REMU
                 instr->type = kRemu;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             default:
-              UNREACHABLE();
+              __builtin_unreachable();
           }  // switch funct3
-          UNREACHABLE();
+          __builtin_unreachable();
         }  // case 0xc
 
         case 0xd: {  // U-type: LUI
@@ -615,21 +615,21 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else if (un.rtype.funct7 == 0x20) {  // SUBW
                 instr->type = kSubw;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x1:
               if (un.rtype.funct7 == 0x0) {  // SLLW
                 instr->type = kSllw;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x4:
               if (un.rtype.funct7 == 0x1) {  // DIVW
                 instr->type = kDivw;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x5:
@@ -640,27 +640,27 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else if (un.rtype.funct7 == 0x20) {  // SRAW
                 instr->type = kSraw;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x6:
               if (un.rtype.funct7 == 0x1) {  // REMW
                 instr->type = kRemw;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x7:
               if (un.rtype.funct7 == 0x1) {  // REMUW
                 instr->type = kRemuw;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             default:
-              UNREACHABLE();
+              __builtin_unreachable();
           }  // switch funct3
-          UNREACHABLE();
+          __builtin_unreachable();
         }  // case 0xe
 
         case 0x10: {  // R4-type
@@ -673,9 +673,9 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               instr->type = kFmaddD;
               return;
             default:
-              UNREACHABLE();
+              __builtin_unreachable();
           }  // switch funct2
-          UNREACHABLE();
+          __builtin_unreachable();
         }  // case 0x10
 
         case 0x11: {  // R4-type
@@ -688,9 +688,9 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               instr->type = kFmsubD;
               return;
             default:
-              UNREACHABLE();
+              __builtin_unreachable();
           }  // switch funct2
-          UNREACHABLE();
+          __builtin_unreachable();
         }  // case 0x11
 
         case 0x12: {  // R4-type
@@ -703,9 +703,9 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               instr->type = kFnmsubD;
               return;
             default:
-              UNREACHABLE();
+              __builtin_unreachable();
           }  // switch funct2
-          UNREACHABLE();
+          __builtin_unreachable();
         }  // case 0x12
 
         case 0x13: {  // R4-type
@@ -718,9 +718,9 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               instr->type = kFnmaddD;
               return;
             default:
-              UNREACHABLE();
+              __builtin_unreachable();
           }  // switch funct2
-          UNREACHABLE();
+          __builtin_unreachable();
         }  // case 0x13
 
         case 0x14: {  // R-type
@@ -758,7 +758,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else if (un.rtype.funct3 == 0x2) {  // FSNGJX.S
                 instr->type = kFsgnjxS;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x11:
@@ -769,7 +769,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else if (un.rtype.funct3 == 0x2) {  // FSNGJX.D
                 instr->type = kFsgnjxD;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x14:
@@ -778,7 +778,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else if (un.rtype.funct3 == 0x1) {  // FMAX.S
                 instr->type = kFmaxS;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x15:
@@ -787,7 +787,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else if (un.rtype.funct3 == 0x1) {  // FMAX.D
                 instr->type = kFmaxD;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x20:  // FCVT.S.D
@@ -814,7 +814,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else if (un.rtype.funct3 == 0x2) {  // FEQ.S
                 instr->type = kFeqS;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x51:
@@ -825,7 +825,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else if (un.rtype.funct3 == 0x2) {  // FEQ.D
                 instr->type = kFeqD;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x60:
@@ -838,7 +838,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else if (un.rtype.rs2 == 0x3) {  // FCVT.LU.S
                 instr->type = kFcvtLuS;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x61:
@@ -851,7 +851,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else if (un.rtype.rs2 == 0x3) {  // FCVT.LU.D
                 instr->type = kFcvtLuD;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x68:
@@ -864,7 +864,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else if (un.rtype.rs2 == 0x3) {  // FCVT.S.LU
                 instr->type = kFcvtSLu;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x69:
@@ -877,7 +877,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else if (un.rtype.rs2 == 0x3) {  // FCVT.D.LU
                 instr->type = kFcvtDLu;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x70:
@@ -887,7 +887,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else if (un.rtype.funct3 == 0x1) {  // FCLASS.S
                 instr->type = kFclassS;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x71:
@@ -897,7 +897,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else if (un.rtype.funct3 == 0x1) {  // FCLASS.D
                 instr->type = kFclassD;
               } else {
-                UNREACHABLE();
+                __builtin_unreachable();
               }
               return;
             case 0x78:  // FMV.W.X
@@ -909,9 +909,9 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               instr->type = kFmvDX;
               return;
             default:
-              UNREACHABLE();
+              __builtin_unreachable();
           }  // switch funct7
-          UNREACHABLE();
+          __builtin_unreachable();
         }  // case 0x14
 
         case 0x18: {  // B-type
@@ -936,9 +936,9 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               instr->type = kBgeu;
               return;
             default:
-              UNREACHABLE();
+              __builtin_unreachable();
           }  // switch funct3
-          UNREACHABLE();
+          __builtin_unreachable();
         }  // case 0x18
 
         case 0x19: {  // I-type: JALR
@@ -978,18 +978,18 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               instr->type = kCsrrci;
               return;
             default:
-              UNREACHABLE();
+              __builtin_unreachable();
           }  // switch funct3
-          UNREACHABLE();
+          __builtin_unreachable();
         }  // case 0x1c
 
         default:
-          UNREACHABLE();
+          __builtin_unreachable();
       }  // switch opcode
-      UNREACHABLE();
+      __builtin_unreachable();
     }  // quadrant case 0x3
 
     default:
-      UNREACHABLE();
+      __builtin_unreachable();
   }
 }
