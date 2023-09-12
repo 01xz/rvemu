@@ -687,8 +687,8 @@ static inline u64 __classify_s(f32 in) {
   union {
     struct {
       bool sign : 1;
-      u8 exp : 8;
-      u32 frac : 23;
+      u8 exp    : 8;
+      u32 frac  : 23;
     } w;
     f32 s;
   } un = {.s = in};
@@ -720,8 +720,8 @@ static inline u64 __classify_d(f64 in) {
   union {
     struct {
       bool sign : 1;
-      u16 exp : 11;
-      u64 frac : 52;
+      u16 exp   : 11;
+      u64 frac  : 52;
     } l;
     f64 d;
   } un = {.d = in};
