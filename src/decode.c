@@ -4,28 +4,199 @@
 
 #include "utils.h"
 
-static inline i32 get_i_type_imm(const RvInstr* instr) {
-  return (i32)instr->raw >> 20;
+typedef struct {
+  u32 opcode : 7;
+  u32 rd : 5;
+  u32 funct3 : 3;
+  u32 rs1 : 5;
+  u32 rs2 : 5;
+  u32 funct7 : 7;
+} RvInstrR;
+
+typedef struct {
+  u32 opcode : 7;
+  u32 rd : 5;
+  u32 funct3 : 3;
+  u32 rs1 : 5;
+  u32 rs2 : 5;
+  u32 funct2 : 2;
+  u32 rs3 : 5;
+} RvInstrR4;
+
+typedef struct {
+  u32 opcode : 7;
+  u32 rd : 5;
+  u32 funct3 : 3;
+  u32 rs1 : 5;
+  u32 imm11_0 : 12;
+} RvInstrI;
+
+typedef struct {
+  u32 opcode : 7;
+  u32 imm4_0 : 5;
+  u32 funct3 : 3;
+  u32 rs1 : 5;
+  u32 rs2 : 5;
+  u32 imm11_5 : 7;
+} RvInstrS;
+
+typedef struct {
+  u32 opcode : 7;
+  u32 imm11 : 1;
+  u32 imm4_1 : 4;
+  u32 funct3 : 3;
+  u32 rs1 : 5;
+  u32 rs2 : 5;
+  u32 imm10_5 : 6;
+  u32 imm12 : 1;
+} RvInstrB;
+
+typedef struct {
+  u32 opcode : 7;
+  u32 rd : 5;
+  u32 imm31_12 : 20;
+} RvInstrU;
+
+typedef struct {
+  u32 opcode : 7;
+  u32 rd : 5;
+  u32 imm19_12 : 8;
+  u32 imm11 : 1;
+  u32 imm10_1 : 10;
+  u32 imm20 : 1;
+} RvInstrJ;
+
+typedef struct {
+  u32 : 16;
+  u32 funct4 : 4;
+  u32 rs1 : 5;
+  u32 rs2 : 5;
+  u32 op : 2;
+} RvInstrCR;
+
+typedef struct {
+  u32 : 16;
+  u32 funct3 : 3;
+  u32 imm1 : 1;
+  u32 rs1 : 5;
+  u32 imm5 : 5;
+  u32 op : 2;
+} RvInstrCI;
+
+typedef struct {
+  u32 : 16;
+  u32 funct3 : 3;
+  u32 imm : 6;
+  u32 rs2 : 5;
+  u32 op : 2;
+} RvInstrCSS;
+
+typedef struct {
+  u32 : 16;
+  u32 funct3 : 3;
+  u32 imm : 8;
+  u32 rd : 3;
+  u32 op : 2;
+} RvInstrCIW;
+
+typedef struct {
+  u32 : 16;
+  u32 funct3 : 3;
+  u32 imm3 : 3;
+  u32 rs1 : 3;
+  u32 imm2 : 2;
+  u32 rd : 3;
+  u32 op : 2;
+} RvInstrCL;
+
+typedef struct {
+  u32 : 16;
+  u32 funct3 : 3;
+  u32 imm3 : 3;
+  u32 rs1 : 3;
+  u32 imm2 : 2;
+  u32 rs2 : 3;
+  u32 op : 2;
+} RvInstrCS;
+
+typedef struct {
+  u32 : 16;
+  u32 funct6 : 6;
+  u32 rs1 : 3;
+  u32 funct2 : 2;
+  u32 rs2 : 3;
+  u32 op : 2;
+} RvInstrCA;
+
+typedef struct {
+  u32 : 16;
+  u32 funct3 : 3;
+  u32 offset3 : 3;
+  u32 rs1 : 3;
+  u32 offset5 : 5;
+  u32 op : 2;
+} RvInstrCB;
+
+typedef struct {
+  u32 : 16;
+  u32 funct3 : 3;
+  u32 target : 11;
+  u32 op : 2;
+} RvInstrCJ;
+
+typedef struct {
+  u32 quadrant : 2;
+  u32 opcode : 5;
+  u32 : 6;
+  u32 instr15_13 : 3;
+  u32 : 4;
+  u32 instr24_20 : 5;
+  u32 instr31_25 : 7;
+} RvInstrG;
+
+typedef union {
+  RvInstrR rtype;
+  RvInstrR4 r4type;
+  RvInstrI itype;
+  RvInstrS stype;
+  RvInstrB btype;
+  RvInstrU utype;
+  RvInstrJ jtype;
+  RvInstrG gtype;
+  RvInstrCR crtype;
+  RvInstrCI citype;
+  RvInstrCSS csstype;
+  RvInstrCIW ciwtype;
+  RvInstrCL cltype;
+  RvInstrCS cstype;
+  RvInstrCA catype;
+  RvInstrCB cbtype;
+  RvInstrCJ cjtype;
+  u32 raw;
+} RvInstrUn;
+
+static inline i32 get_i_type_imm(const RvInstrUn *un) {
+  return (i32)un->raw >> 20;
 }
 
-static inline i32 get_s_type_imm(const RvInstr* instr) {
-  i32 imm = (instr->stype.imm11_5 << 5) | instr->stype.imm4_0;
+static inline i32 get_s_type_imm(const RvInstrUn *un) {
+  i32 imm = (un->stype.imm11_5 << 5) | un->stype.imm4_0;
   return (imm << 20) >> 20;
 }
 
-static inline i32 get_b_type_imm(const RvInstr* instr) {
-  i32 imm = (instr->btype.imm12 << 12) | (instr->btype.imm11 << 11) |
-            (instr->btype.imm10_5 << 5) | (instr->btype.imm4_1 << 1);
+static inline i32 get_b_type_imm(const RvInstrUn *un) {
+  i32 imm = (un->btype.imm12 << 12) | (un->btype.imm11 << 11) |
+            (un->btype.imm10_5 << 5) | (un->btype.imm4_1 << 1);
   return (imm << 19) >> 19;
 }
 
-static inline i32 get_u_type_imm(const RvInstr* instr) {
-  return (i32)instr->raw & 0xfffff000;
+static inline i32 get_u_type_imm(const RvInstrUn *un) {
+  return (i32)un->raw & 0xfffff000;
 }
 
-static inline i32 get_j_type_imm(const RvInstr* instr) {
-  i32 imm = (instr->jtype.imm20 << 20) | (instr->jtype.imm19_12 << 12) |
-            (instr->jtype.imm11 << 11) | (instr->jtype.imm10_1 << 1);
+static inline i32 get_j_type_imm(const RvInstrUn *un) {
+  i32 imm = (un->jtype.imm20 << 20) | (un->jtype.imm19_12 << 12) |
+            (un->jtype.imm11 << 11) | (un->jtype.imm10_1 << 1);
   return (imm << 11) >> 11;
 }
 
