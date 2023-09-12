@@ -175,49 +175,177 @@ typedef union {
   u32 raw;
 } RvInstrUn;
 
-static inline i32 get_i_type_imm(const RvInstrUn *un) {
+static inline RvInstr decode_r_type(const RvInstrUn *un) {
+  return (RvInstr){
+      .rs1 = un->rtype.rs1,
+      .rs2 = un->rtype.rs2,
+      .rd = un->rtype.rd,
+  };
+}
+
+static inline RvInstr decode_r4_type(const RvInstrUn *un) {
+  return (RvInstr){
+      .rs1 = un->r4type.rs1,
+      .rs2 = un->r4type.rs2,
+      .rs3 = un->r4type.rs3,
+      .rd = un->r4type.rd,
+  };
+}
+
+static inline i32 __get_i_type_imm(const RvInstrUn *un) {
   return (i32)un->raw >> 20;
 }
 
-static inline i32 get_s_type_imm(const RvInstrUn *un) {
+static inline RvInstr decode_i_type(const RvInstrUn *un) {
+  return (RvInstr){
+      .imm = __get_i_type_imm(un),
+      .rs1 = un->itype.rs1,
+      .rd = un->itype.rd,
+  };
+}
+
+static inline i32 __get_s_type_imm(const RvInstrUn *un) {
   i32 imm = (un->stype.imm11_5 << 5) | un->stype.imm4_0;
   return (imm << 20) >> 20;
 }
 
-static inline i32 get_b_type_imm(const RvInstrUn *un) {
+static inline RvInstr decode_s_type(const RvInstrUn *un) {
+  return (RvInstr){
+      .imm = __get_s_type_imm(un),
+      .rs1 = un->stype.rs1,
+      .rs2 = un->stype.rs2,
+  };
+}
+
+static inline i32 __get_b_type_imm(const RvInstrUn *un) {
   i32 imm = (un->btype.imm12 << 12) | (un->btype.imm11 << 11) |
             (un->btype.imm10_5 << 5) | (un->btype.imm4_1 << 1);
   return (imm << 19) >> 19;
 }
 
-static inline i32 get_u_type_imm(const RvInstrUn *un) {
+static inline RvInstr decode_b_type(const RvInstrUn *un) {
+  return (RvInstr){
+      .imm = __get_b_type_imm(un),
+      .rs1 = un->btype.rs1,
+      .rs2 = un->btype.rs2,
+  };
+}
+
+static inline i32 __get_u_type_imm(const RvInstrUn *un) {
   return (i32)un->raw & 0xfffff000;
 }
 
-static inline i32 get_j_type_imm(const RvInstrUn *un) {
+static inline RvInstr decode_u_type(const RvInstrUn *un) {
+  return (RvInstr){
+      .imm = __get_u_type_imm(un),
+      .rd = un->utype.rd,
+  };
+}
+
+static inline i32 __get_j_type_imm(const RvInstrUn *un) {
   i32 imm = (un->jtype.imm20 << 20) | (un->jtype.imm19_12 << 12) |
             (un->jtype.imm11 << 11) | (un->jtype.imm10_1 << 1);
   return (imm << 11) >> 11;
 }
 
-void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
-  instr->raw = instr_raw;
-  switch (instr->gtype.quadrant) {
-    case 0x0:
-      FATAL("TODO");
-      break;
-    case 0x1:
-      FATAL("TODO");
-      break;
-    case 0x2:
-      FATAL("TODO");
-      break;
+static inline RvInstr decode_j_type(const RvInstrUn *un) {
+  return (RvInstr){
+      .imm = __get_j_type_imm(un),
+      .rd = un->jtype.rd,
+  };
+}
+
+static inline RvInstr decode_cr_type(const RvInstrUn *un) {
+  return (RvInstr){};
+}
+
+void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
+  RvInstrUn un = {.raw = instr_raw};
+  switch (un.gtype.quadrant) {
+    case 0x0: {
+      instr->rvc = true;
+      switch (un.gtype.instr15_13) {
+        case 0x0:  // C.ADDI4SPN
+          instr->type = kAddi;
+          instr->imm = 0;
+          return;
+        case 0x1:  // C.FLD
+          return;
+        case 0x2:  // C.LW
+          return;
+        case 0x3:  // C.LD
+          return;
+        case 0x5:  // C.FSD
+          return;
+        case 0x6:  // C.SW
+          return;
+        case 0x7:  // C.SD
+          return;
+        default:
+          __builtin_unreachable();
+      }
+      __builtin_unreachable();
+    }
+
+    case 0x1: {
+      instr->rvc = true;
+      switch (un.gtype.instr15_13) {
+        case 0x0: {
+          instr->type = kAddi;
+          return;
+        }
+        case 0x1:  // C.ADDIW
+          return;
+        case 0x2:  // C.LI
+          return;
+        case 0x3: {
+        }
+        case 0x4: {
+        }
+        case 0x5:  // C.J
+          return;
+        case 0x6:  // C.BEQZ
+          return;
+        case 0x7:  // C.BNEZ
+          return;
+        default:
+          __builtin_unreachable();
+      }
+      __builtin_unreachable();
+    }
+
+    case 0x2: {
+      instr->rvc = true;
+      switch (un.gtype.instr15_13) {
+        case 0x0:  // C.SLLI
+          instr->type = kSlli;
+          return;
+        case 0x1:  // C.FLDSP
+          return;
+        case 0x2:  // C.LWSP
+          return;
+        case 0x3:  // C.LDSP
+          return;
+        case 0x4: {
+        }
+        case 0x5:  // C.FSDSP
+          return;
+        case 0x6:  // C.SWSP
+          return;
+        case 0x7:  // C.SDSP
+          return;
+        default:
+          __builtin_unreachable();
+      }
+      __builtin_unreachable();
+    }
+
     case 0x3: {  // not rvc
       instr->rvc = false;
-      switch (instr->gtype.opcode) {
+      switch (un.gtype.opcode) {
         case 0x0: {  // I-type
-          instr->imm = get_i_type_imm(instr);
-          switch (instr->itype.funct3) {
+          *instr = decode_i_type(&un);
+          switch (un.itype.funct3) {
             case 0x0:  // LB
               instr->type = kLb;
               return;
@@ -246,8 +374,8 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
         }  // opcode case 0x0
 
         case 0x1: {  // I-type
-          instr->imm = get_i_type_imm(instr);
-          switch (instr->itype.funct3) {
+          *instr = decode_i_type(&un);
+          switch (un.itype.funct3) {
             case 0x2:  // FLW
               instr->type = kFlw;
               return;
@@ -261,8 +389,8 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
         }  // opcode case 0x1
 
         case 0x3: {  // I-type
-          instr->imm = get_i_type_imm(instr);
-          switch (instr->itype.funct3) {
+          *instr = decode_i_type(&un);
+          switch (un.itype.funct3) {
             case 0x0:  // FENCE
               instr->type = kFence;
               return;
@@ -276,13 +404,13 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
         }  // opcode case 0x3
 
         case 0x4: {  // I-type
-          instr->imm = get_i_type_imm(instr);
-          switch (instr->itype.funct3) {
+          *instr = decode_i_type(&un);
+          switch (un.itype.funct3) {
             case 0x0:  // ADDI
               instr->type = kAddi;
               return;
             case 0x1:
-              if ((instr->gtype.instr31_25 >> 1) == 0x0) {  // SLLI
+              if ((un.gtype.instr31_25 >> 1) == 0x0) {  // SLLI
                 instr->type = kSlli;
               } else {
                 UNREACHABLE();
@@ -298,9 +426,9 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
               instr->type = kXori;
               return;
             case 0x5:
-              if ((instr->gtype.instr31_25 >> 1) == 0x0) {  // SRLI
+              if ((un.gtype.instr31_25 >> 1) == 0x0) {  // SRLI
                 instr->type = kSrli;
-              } else if ((instr->gtype.instr31_25 >> 1) == 0x10) {  // SRAI
+              } else if ((un.gtype.instr31_25 >> 1) == 0x10) {  // SRAI
                 instr->type = kSrai;
               } else {
                 UNREACHABLE();
@@ -319,25 +447,25 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
         }  // opcode case 0x4
 
         case 0x5: {  // U-type: AUIPC
-          instr->imm = get_u_type_imm(instr);
+          *instr = decode_u_type(&un);
           instr->type = kAuipc;
           return;
         }  // opcode case 0x5
 
         case 0x6: {  // I-type
-          instr->imm = get_i_type_imm(instr);
-          switch (instr->itype.funct3) {
+          *instr = decode_i_type(&un);
+          switch (un.itype.funct3) {
             case 0x0:  // ADDIW
               instr->type = kAddiw;
               return;
             case 0x1:  // SLLIW
-              assert(instr->gtype.instr31_25 == 0x0);
+              assert(un.gtype.instr31_25 == 0x0);
               instr->type = kSlliw;
               return;
             case 0x5:
-              if (instr->gtype.instr31_25 == 0x0) {  // SRLIW
+              if (un.gtype.instr31_25 == 0x0) {  // SRLIW
                 instr->type = kSrliw;
-              } else if (instr->gtype.instr31_25 == 0x20) {  // SRAIW
+              } else if (un.gtype.instr31_25 == 0x20) {  // SRAIW
                 instr->type = kSraiw;
               } else {
                 UNREACHABLE();
@@ -350,8 +478,8 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
         }  // opcode case 0x6
 
         case 0x8: {  // S-type
-          instr->imm = get_s_type_imm(instr);
-          switch (instr->stype.funct3) {
+          *instr = decode_s_type(&un);
+          switch (un.stype.funct3) {
             case 0x0:  // SB
               instr->type = kSb;
               return;
@@ -371,8 +499,8 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
         }  // opcode case 0x8
 
         case 0x9: {  // S-type
-          instr->imm = get_s_type_imm(instr);
-          switch (instr->stype.funct3) {
+          *instr = decode_s_type(&un);
+          switch (un.stype.funct3) {
             case 0x2:  // FSW
               instr->type = kFsw;
               return;
@@ -386,78 +514,79 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
         }  // case 0x9
 
         case 0xc: {  // R-type
-          switch (instr->rtype.funct3) {
+          *instr = decode_r_type(&un);
+          switch (un.rtype.funct3) {
             case 0x0:
-              if (instr->rtype.funct7 == 0x0) {  // ADD
+              if (un.rtype.funct7 == 0x0) {  // ADD
                 instr->type = kAdd;
-              } else if (instr->rtype.funct7 == 0x1) {  // MUL
+              } else if (un.rtype.funct7 == 0x1) {  // MUL
                 instr->type = kMul;
-              } else if (instr->rtype.funct7 == 0x20) {  // SUB
+              } else if (un.rtype.funct7 == 0x20) {  // SUB
                 instr->type = kSub;
               } else {
                 UNREACHABLE();
               }
               return;
             case 0x1:
-              if (instr->rtype.funct7 == 0x0) {  // SLL
+              if (un.rtype.funct7 == 0x0) {  // SLL
                 instr->type = kSll;
-              } else if (instr->rtype.funct7 == 0x1) {  // MULH
+              } else if (un.rtype.funct7 == 0x1) {  // MULH
                 instr->type = kMulh;
               } else {
                 UNREACHABLE();
               }
               return;
             case 0x2:
-              if (instr->rtype.funct7 == 0x0) {  // SLT
+              if (un.rtype.funct7 == 0x0) {  // SLT
                 instr->type = kSlt;
-              } else if (instr->rtype.funct7 == 0x1) {  // MULHSU
+              } else if (un.rtype.funct7 == 0x1) {  // MULHSU
                 instr->type = kMulhsu;
               } else {
                 UNREACHABLE();
               }
               return;
             case 0x3:
-              if (instr->rtype.funct7 == 0x0) {  // SLTU
+              if (un.rtype.funct7 == 0x0) {  // SLTU
                 instr->type = kSltu;
-              } else if (instr->rtype.funct7 == 0x1) {  // MULHU
+              } else if (un.rtype.funct7 == 0x1) {  // MULHU
                 instr->type = kMulhu;
               } else {
                 UNREACHABLE();
               }
               return;
             case 0x4:
-              if (instr->rtype.funct7 == 0x0) {  // XOR
+              if (un.rtype.funct7 == 0x0) {  // XOR
                 instr->type = kXor;
-              } else if (instr->rtype.funct7 == 0x1) {  // DIV
+              } else if (un.rtype.funct7 == 0x1) {  // DIV
                 instr->type = kDiv;
               } else {
                 UNREACHABLE();
               }
               return;
             case 0x5:
-              if (instr->rtype.funct7 == 0x0) {  // SRL
+              if (un.rtype.funct7 == 0x0) {  // SRL
                 instr->type = kSrl;
-              } else if (instr->rtype.funct7 == 0x1) {  // DIVU
+              } else if (un.rtype.funct7 == 0x1) {  // DIVU
                 instr->type = kDivu;
-              } else if (instr->rtype.funct7 == 0x20) {  // SRA
+              } else if (un.rtype.funct7 == 0x20) {  // SRA
                 instr->type = kSra;
               } else {
                 UNREACHABLE();
               }
               return;
             case 0x6:
-              if (instr->rtype.funct7 == 0x0) {  // OR
+              if (un.rtype.funct7 == 0x0) {  // OR
                 instr->type = kOr;
-              } else if (instr->rtype.funct7 == 0x1) {  // REM
+              } else if (un.rtype.funct7 == 0x1) {  // REM
                 instr->type = kRem;
               } else {
                 UNREACHABLE();
               }
               return;
             case 0x7:
-              if (instr->rtype.funct7 == 0x0) {  // AND
+              if (un.rtype.funct7 == 0x0) {  // AND
                 instr->type = kAnd;
-              } else if (instr->rtype.funct7 == 0x1) {  // REMU
+              } else if (un.rtype.funct7 == 0x1) {  // REMU
                 instr->type = kRemu;
               } else {
                 UNREACHABLE();
@@ -470,58 +599,59 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
         }  // case 0xc
 
         case 0xd: {  // U-type: LUI
-          instr->imm = get_u_type_imm(instr);
+          *instr = decode_u_type(&un);
           instr->type = kLui;
           return;
         }  // case 0xd
 
         case 0xe: {  // R-type
-          switch (instr->rtype.funct3) {
+          *instr = decode_r_type(&un);
+          switch (un.rtype.funct3) {
             case 0x0:
-              if (instr->rtype.funct7 == 0x0) {  // ADDW
+              if (un.rtype.funct7 == 0x0) {  // ADDW
                 instr->type = kAddw;
-              } else if (instr->rtype.funct7 == 0x1) {  // MULW
+              } else if (un.rtype.funct7 == 0x1) {  // MULW
                 instr->type = kMulw;
-              } else if (instr->rtype.funct7 == 0x20) {  // SUBW
+              } else if (un.rtype.funct7 == 0x20) {  // SUBW
                 instr->type = kSubw;
               } else {
                 UNREACHABLE();
               }
               return;
             case 0x1:
-              if (instr->rtype.funct7 == 0x0) {  // SLLW
+              if (un.rtype.funct7 == 0x0) {  // SLLW
                 instr->type = kSllw;
               } else {
                 UNREACHABLE();
               }
               return;
             case 0x4:
-              if (instr->rtype.funct7 == 0x1) {  // DIVW
+              if (un.rtype.funct7 == 0x1) {  // DIVW
                 instr->type = kDivw;
               } else {
                 UNREACHABLE();
               }
               return;
             case 0x5:
-              if (instr->rtype.funct7 == 0x0) {  // SRLW
+              if (un.rtype.funct7 == 0x0) {  // SRLW
                 instr->type = kSrlw;
-              } else if (instr->rtype.funct7 == 0x1) {  // DIVUW
+              } else if (un.rtype.funct7 == 0x1) {  // DIVUW
                 instr->type = kDivuw;
-              } else if (instr->rtype.funct7 == 0x20) {  // SRAW
+              } else if (un.rtype.funct7 == 0x20) {  // SRAW
                 instr->type = kSraw;
               } else {
                 UNREACHABLE();
               }
               return;
             case 0x6:
-              if (instr->rtype.funct7 == 0x1) {  // REMW
+              if (un.rtype.funct7 == 0x1) {  // REMW
                 instr->type = kRemw;
               } else {
                 UNREACHABLE();
               }
               return;
             case 0x7:
-              if (instr->rtype.funct7 == 0x1) {  // REMUW
+              if (un.rtype.funct7 == 0x1) {  // REMUW
                 instr->type = kRemuw;
               } else {
                 UNREACHABLE();
@@ -534,7 +664,8 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
         }  // case 0xe
 
         case 0x10: {  // R4-type
-          switch (instr->r4type.funct2) {
+          *instr = decode_r4_type(&un);
+          switch (un.r4type.funct2) {
             case 0x0:  // FMADD.S
               instr->type = kFmaddS;
               return;
@@ -548,7 +679,8 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
         }  // case 0x10
 
         case 0x11: {  // R4-type
-          switch (instr->r4type.funct2) {
+          *instr = decode_r4_type(&un);
+          switch (un.r4type.funct2) {
             case 0x0:  // FMSUB.S
               instr->type = kFmsubS;
               return;
@@ -562,7 +694,8 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
         }  // case 0x11
 
         case 0x12: {  // R4-type
-          switch (instr->r4type.funct2) {
+          *instr = decode_r4_type(&un);
+          switch (un.r4type.funct2) {
             case 0x0:  // FNMSUB.S
               instr->type = kFnmsubS;
               return;
@@ -576,7 +709,8 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
         }  // case 0x12
 
         case 0x13: {  // R4-type
-          switch (instr->r4type.funct2) {
+          *instr = decode_r4_type(&un);
+          switch (un.r4type.funct2) {
             case 0x0:  // FNMADD.S
               instr->type = kFnmaddS;
               return;
@@ -589,8 +723,9 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
           UNREACHABLE();
         }  // case 0x13
 
-        case 0x14: {
-          switch (instr->rtype.funct7) {
+        case 0x14: {  // R-type
+          *instr = decode_r_type(&un);
+          switch (un.rtype.funct7) {
             case 0x0:  // FADD.S
               instr->type = kFaddS;
               return;
@@ -616,161 +751,161 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
               instr->type = kFdivD;
               return;
             case 0x10:
-              if (instr->rtype.funct3 == 0x0) {  // FSGNJ.S
+              if (un.rtype.funct3 == 0x0) {  // FSGNJ.S
                 instr->type = kFsgnjS;
-              } else if (instr->rtype.funct3 == 0x1) {  // FSNGJN.S
+              } else if (un.rtype.funct3 == 0x1) {  // FSNGJN.S
                 instr->type = kFsgnjnS;
-              } else if (instr->rtype.funct3 == 0x2) {  // FSNGJX.S
+              } else if (un.rtype.funct3 == 0x2) {  // FSNGJX.S
                 instr->type = kFsgnjxS;
               } else {
                 UNREACHABLE();
               }
               return;
             case 0x11:
-              if (instr->rtype.funct3 == 0x0) {  // FSGNJ.D
+              if (un.rtype.funct3 == 0x0) {  // FSGNJ.D
                 instr->type = kFsgnjD;
-              } else if (instr->rtype.funct3 == 0x1) {  // FSNGJN.D
+              } else if (un.rtype.funct3 == 0x1) {  // FSNGJN.D
                 instr->type = kFsgnjnD;
-              } else if (instr->rtype.funct3 == 0x2) {  // FSNGJX.D
+              } else if (un.rtype.funct3 == 0x2) {  // FSNGJX.D
                 instr->type = kFsgnjxD;
               } else {
                 UNREACHABLE();
               }
               return;
             case 0x14:
-              if (instr->rtype.funct3 == 0x0) {  // FMIN.S
+              if (un.rtype.funct3 == 0x0) {  // FMIN.S
                 instr->type = kFminS;
-              } else if (instr->rtype.funct3 == 0x1) {  // FMAX.S
+              } else if (un.rtype.funct3 == 0x1) {  // FMAX.S
                 instr->type = kFmaxS;
               } else {
                 UNREACHABLE();
               }
               return;
             case 0x15:
-              if (instr->rtype.funct3 == 0x0) {  // FMIN.D
+              if (un.rtype.funct3 == 0x0) {  // FMIN.D
                 instr->type = kFminD;
-              } else if (instr->rtype.funct3 == 0x1) {  // FMAX.D
+              } else if (un.rtype.funct3 == 0x1) {  // FMAX.D
                 instr->type = kFmaxD;
               } else {
                 UNREACHABLE();
               }
               return;
             case 0x20:  // FCVT.S.D
-              assert(instr->rtype.rs2 == 0x1);
+              assert(un.rtype.rs2 == 0x1);
               instr->type = kFcvtSD;
               return;
             case 0x21:  // FCVT.D.S
-              assert(instr->rtype.rs2 == 0x0);
+              assert(un.rtype.rs2 == 0x0);
               instr->type = kFcvtDS;
               return;
             case 0x2c:  // FSQRT.S
-              assert(instr->rtype.rs2 == 0x0);
+              assert(un.rtype.rs2 == 0x0);
               instr->type = kFsqrtS;
               return;
             case 0x2d:  // FSQRT.D
-              assert(instr->rtype.rs2 == 0x0);
+              assert(un.rtype.rs2 == 0x0);
               instr->type = kFsqrtD;
               return;
             case 0x50:
-              if (instr->rtype.funct3 == 0x0) {  // FLE.S
+              if (un.rtype.funct3 == 0x0) {  // FLE.S
                 instr->type = kFleS;
-              } else if (instr->rtype.funct3 == 0x1) {  // FLT.S
+              } else if (un.rtype.funct3 == 0x1) {  // FLT.S
                 instr->type = kFltS;
-              } else if (instr->rtype.funct3 == 0x2) {  // FEQ.S
+              } else if (un.rtype.funct3 == 0x2) {  // FEQ.S
                 instr->type = kFeqS;
               } else {
                 UNREACHABLE();
               }
               return;
             case 0x51:
-              if (instr->rtype.funct3 == 0x0) {  // FLE.D
+              if (un.rtype.funct3 == 0x0) {  // FLE.D
                 instr->type = kFleD;
-              } else if (instr->rtype.funct3 == 0x1) {  // FLT.D
+              } else if (un.rtype.funct3 == 0x1) {  // FLT.D
                 instr->type = kFltD;
-              } else if (instr->rtype.funct3 == 0x2) {  // FEQ.D
+              } else if (un.rtype.funct3 == 0x2) {  // FEQ.D
                 instr->type = kFeqD;
               } else {
                 UNREACHABLE();
               }
               return;
             case 0x60:
-              if (instr->rtype.rs2 == 0x0) {  // FCVT.W.S
+              if (un.rtype.rs2 == 0x0) {  // FCVT.W.S
                 instr->type = kFcvtWS;
-              } else if (instr->rtype.rs2 == 0x1) {  // FCVT.WU.S
+              } else if (un.rtype.rs2 == 0x1) {  // FCVT.WU.S
                 instr->type = kFcvtWuS;
-              } else if (instr->rtype.rs2 == 0x2) {  // FCVT.L.S
+              } else if (un.rtype.rs2 == 0x2) {  // FCVT.L.S
                 instr->type = kFcvtLS;
-              } else if (instr->rtype.rs2 == 0x3) {  // FCVT.LU.S
+              } else if (un.rtype.rs2 == 0x3) {  // FCVT.LU.S
                 instr->type = kFcvtLuS;
               } else {
                 UNREACHABLE();
               }
               return;
             case 0x61:
-              if (instr->rtype.rs2 == 0x0) {  // FCVT.W.D
+              if (un.rtype.rs2 == 0x0) {  // FCVT.W.D
                 instr->type = kFcvtWD;
-              } else if (instr->rtype.rs2 == 0x1) {  // FCVT.WU.D
+              } else if (un.rtype.rs2 == 0x1) {  // FCVT.WU.D
                 instr->type = kFcvtWuD;
-              } else if (instr->rtype.rs2 == 0x2) {  // FCVT.L.D
+              } else if (un.rtype.rs2 == 0x2) {  // FCVT.L.D
                 instr->type = kFcvtLD;
-              } else if (instr->rtype.rs2 == 0x3) {  // FCVT.LU.D
+              } else if (un.rtype.rs2 == 0x3) {  // FCVT.LU.D
                 instr->type = kFcvtLuD;
               } else {
                 UNREACHABLE();
               }
               return;
             case 0x68:
-              if (instr->rtype.rs2 == 0x0) {  // FCVT.S.W
+              if (un.rtype.rs2 == 0x0) {  // FCVT.S.W
                 instr->type = kFcvtSW;
-              } else if (instr->rtype.rs2 == 0x1) {  // FCVT.S.WU
+              } else if (un.rtype.rs2 == 0x1) {  // FCVT.S.WU
                 instr->type = kFcvtSWu;
-              } else if (instr->rtype.rs2 == 0x2) {  // FCVT.S.L
+              } else if (un.rtype.rs2 == 0x2) {  // FCVT.S.L
                 instr->type = kFcvtSL;
-              } else if (instr->rtype.rs2 == 0x3) {  // FCVT.S.LU
+              } else if (un.rtype.rs2 == 0x3) {  // FCVT.S.LU
                 instr->type = kFcvtSLu;
               } else {
                 UNREACHABLE();
               }
               return;
             case 0x69:
-              if (instr->rtype.rs2 == 0x0) {  // FCVT.D.W
+              if (un.rtype.rs2 == 0x0) {  // FCVT.D.W
                 instr->type = kFcvtDW;
-              } else if (instr->rtype.rs2 == 0x1) {  // FCVT.D.WU
+              } else if (un.rtype.rs2 == 0x1) {  // FCVT.D.WU
                 instr->type = kFcvtDWu;
-              } else if (instr->rtype.rs2 == 0x2) {  // FCVT.D.L
+              } else if (un.rtype.rs2 == 0x2) {  // FCVT.D.L
                 instr->type = kFcvtDL;
-              } else if (instr->rtype.rs2 == 0x3) {  // FCVT.D.LU
+              } else if (un.rtype.rs2 == 0x3) {  // FCVT.D.LU
                 instr->type = kFcvtDLu;
               } else {
                 UNREACHABLE();
               }
               return;
             case 0x70:
-              assert(instr->rtype.rs2 == 0x0);
-              if (instr->rtype.funct3 == 0x0) {  // FMV.X.W
+              assert(un.rtype.rs2 == 0x0);
+              if (un.rtype.funct3 == 0x0) {  // FMV.X.W
                 instr->type = kFmvXW;
-              } else if (instr->rtype.funct3 == 0x1) {  // FCLASS.S
+              } else if (un.rtype.funct3 == 0x1) {  // FCLASS.S
                 instr->type = kFclassS;
               } else {
                 UNREACHABLE();
               }
               return;
             case 0x71:
-              assert(instr->rtype.rs2 == 0x0);
-              if (instr->rtype.funct3 == 0x0) {  // FMV.X.D
+              assert(un.rtype.rs2 == 0x0);
+              if (un.rtype.funct3 == 0x0) {  // FMV.X.D
                 instr->type = kFmvXD;
-              } else if (instr->rtype.funct3 == 0x1) {  // FCLASS.D
+              } else if (un.rtype.funct3 == 0x1) {  // FCLASS.D
                 instr->type = kFclassD;
               } else {
                 UNREACHABLE();
               }
               return;
             case 0x78:  // FMV.W.X
-              assert(instr->rtype.rs2 == 0x0 && instr->rtype.funct3 == 0x0);
+              assert(un.rtype.rs2 == 0x0 && un.rtype.funct3 == 0x0);
               instr->type = kFmvWX;
               return;
             case 0x79:  // FMV.D.X
-              assert(instr->rtype.rs2 == 0x0 && instr->rtype.funct3 == 0x0);
+              assert(un.rtype.rs2 == 0x0 && un.rtype.funct3 == 0x0);
               instr->type = kFmvDX;
               return;
             default:
@@ -780,8 +915,8 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
         }  // case 0x14
 
         case 0x18: {  // B-type
-          instr->imm = get_b_type_imm(instr);
-          switch (instr->btype.funct3) {
+          *instr = decode_b_type(&un);
+          switch (un.btype.funct3) {
             case 0x0:  // BEQ
               instr->type = kBeq;
               return;
@@ -807,20 +942,20 @@ void rv_instr_decode(RvInstr* instr, u32 instr_raw) {
         }  // case 0x18
 
         case 0x19: {  // I-type: JALR
-          instr->imm = get_i_type_imm(instr);
+          *instr = decode_i_type(&un);
           instr->type = kJalr;
           return;
         }  // case 0x19
 
         case 0x1b: {  // J-type: JAL
-          instr->imm = get_j_type_imm(instr);
+          *instr = decode_j_type(&un);
           instr->type = kJal;
           return;
         }  // case 0x1b
 
         case 0x1c: {  // I-type
-          instr->imm = get_i_type_imm(instr);
-          switch (instr->itype.funct3) {
+          *instr = decode_i_type(&un);
+          switch (un.itype.funct3) {
             case 0x0:  // ECALL
               instr->type = kEcall;
               return;
