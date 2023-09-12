@@ -6,9 +6,9 @@
 #include "decode.h"
 #include "utils.h"
 
-#define __HANDLER_LOAD(type)                                     \
-  u64 addr = state->gp_regs[instr->itype.rs1] + (i64)instr->imm; \
-  state->gp_regs[instr->itype.rd] = *(type*)TO_HOST(addr);
+#define __HANDLER_LOAD(type)                               \
+  u64 addr = state->gp_regs[instr->rs1] + (i64)instr->imm; \
+  state->gp_regs[instr->rd] = *(type*)TO_HOST(addr);
 
 static void handler_lb(State* state, const RvInstr* instr) {
   __HANDLER_LOAD(i8);
@@ -38,9 +38,9 @@ static void handler_lwu(State* state, const RvInstr* instr) {
   __HANDLER_LOAD(u32);
 }
 
-#define __HANDLER_STORE(type)                                    \
-  u64 addr = state->gp_regs[instr->stype.rs1] + (i64)instr->imm; \
-  *(type*)TO_HOST(addr) = (type)state->gp_regs[instr->stype.rs2];
+#define __HANDLER_STORE(type)                              \
+  u64 addr = state->gp_regs[instr->rs1] + (i64)instr->imm; \
+  *(type*)TO_HOST(addr) = (type)state->gp_regs[instr->rs2];
 
 static void handler_sb(State* state, const RvInstr* instr) {
   __HANDLER_STORE(i8);
@@ -58,10 +58,10 @@ static void handler_sd(State* state, const RvInstr* instr) {
   __HANDLER_STORE(i64);
 }
 
-#define __HANDLER_I_ARITHMETIC(expr)          \
-  u64 rs1 = state->gp_regs[instr->itype.rs1]; \
-  i64 imm = (i64)instr->imm;                  \
-  state->gp_regs[instr->itype.rd] = (expr);
+#define __HANDLER_I_ARITHMETIC(expr)    \
+  u64 rs1 = state->gp_regs[instr->rs1]; \
+  i64 imm = (i64)instr->imm;            \
+  state->gp_regs[instr->rd] = (expr);
 
 static void handler_addi(State* state, const RvInstr* instr) {
   __HANDLER_I_ARITHMETIC(rs1 + imm);
@@ -115,10 +115,10 @@ static void handler_sraiw(State* state, const RvInstr* instr) {
   __HANDLER_I_ARITHMETIC((i64)((i32)rs1 >> (imm & 0x1f)));
 }
 
-#define __HANDLER_R_ARITHMETIC(expr)          \
-  u64 rs1 = state->gp_regs[instr->rtype.rs1]; \
-  u64 rs2 = state->gp_regs[instr->rtype.rs2]; \
-  state->gp_regs[instr->rtype.rd] = (expr);
+#define __HANDLER_R_ARITHMETIC(expr)    \
+  u64 rs1 = state->gp_regs[instr->rs1]; \
+  u64 rs2 = state->gp_regs[instr->rs2]; \
+  state->gp_regs[instr->rd] = (expr);
 
 static void handler_add(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC(rs1 + rs2);
@@ -289,16 +289,16 @@ static void handler_remuw(State* state, const RvInstr* instr) {
 }
 
 static void handler_auipc(State* state, const RvInstr* instr) {
-  state->gp_regs[instr->utype.rd] = state->pc + (i64)instr->imm;
+  state->gp_regs[instr->rd] = state->pc + (i64)instr->imm;
 }
 
 static void handler_lui(State* state, const RvInstr* instr) {
-  state->gp_regs[instr->utype.rd] = (i64)instr->imm;
+  state->gp_regs[instr->rd] = (i64)instr->imm;
 }
 
-#define __HANDLER_BRANCH(condi)               \
-  u64 rs1 = state->gp_regs[instr->btype.rs1]; \
-  u64 rs2 = state->gp_regs[instr->btype.rs2]; \
+#define __HANDLER_BRANCH(condi)         \
+  u64 rs1 = state->gp_regs[instr->rs1]; \
+  u64 rs2 = state->gp_regs[instr->rs2]; \
   if (condi) state->pc += (i64)instr->imm;
 
 static void handler_beq(State* state, const RvInstr* instr) {
@@ -326,14 +326,13 @@ static void handler_bgeu(State* state, const RvInstr* instr) {
 }
 
 static void handler_jalr(State* state, const RvInstr* instr) {
-  state->gp_regs[instr->itype.rd] = state->pc + (instr->rvc ? 2 : 4);
-  state->re_enter_pc =
-      (state->gp_regs[instr->itype.rs1] + (i64)instr->imm) & ~(u64)1;
+  state->gp_regs[instr->rd] = state->pc + (instr->rvc ? 2 : 4);
+  state->re_enter_pc = (state->gp_regs[instr->rs1] + (i64)instr->imm) & ~(u64)1;
   state->exit_reason = kIndirectBranch;
 }
 
 static void handler_jal(State* state, const RvInstr* instr) {
-  state->gp_regs[instr->itype.rd] = state->pc + (instr->rvc ? 2 : 4);
+  state->gp_regs[instr->rd] = state->pc + (instr->rvc ? 2 : 4);
   state->re_enter_pc = state->pc = state->pc + (i64)instr->imm;
   state->exit_reason = kDirectBranch;
 }
@@ -356,7 +355,7 @@ static void handler_fencei(State* state, const RvInstr* instr) {}
     default:              \
       FATAL("TODO: csr"); \
   }                       \
-  state->gp_regs[instr->itype.rd] = 0;
+  state->gp_regs[instr->rd] = 0;
 
 static void handler_csrrw(State* state, const RvInstr* instr) {
   __HANDLER_CSR();
@@ -383,18 +382,18 @@ static void handler_csrrci(State* state, const RvInstr* instr) {
 }
 
 static void handler_flw(State* state, const RvInstr* instr) {
-  u64 addr = state->gp_regs[instr->itype.rs1] + (i64)instr->imm;
-  state->fp_regs[instr->itype.rd].wu = *(u32*)TO_HOST(addr);
+  u64 addr = state->gp_regs[instr->rs1] + (i64)instr->imm;
+  state->fp_regs[instr->rd].wu = *(u32*)TO_HOST(addr);
 }
 
 static void handler_fld(State* state, const RvInstr* instr) {
-  u64 addr = state->gp_regs[instr->itype.rs1] + (i64)instr->imm;
-  state->fp_regs[instr->itype.rd].lu = *(u64*)TO_HOST(addr);
+  u64 addr = state->gp_regs[instr->rs1] + (i64)instr->imm;
+  state->fp_regs[instr->rd].lu = *(u64*)TO_HOST(addr);
 }
 
-#define __HANDLER_STORE_F(type)                                  \
-  u64 addr = state->gp_regs[instr->stype.rs1] + (i64)instr->imm; \
-  *(type*)TO_HOST(addr) = (type)state->fp_regs[instr->stype.rs2].lu;
+#define __HANDLER_STORE_F(type)                            \
+  u64 addr = state->gp_regs[instr->rs1] + (i64)instr->imm; \
+  *(type*)TO_HOST(addr) = (type)state->fp_regs[instr->rs2].lu;
 
 static void handler_fsw(State* state, const RvInstr* instr) {
   __HANDLER_STORE_F(u32);
@@ -404,10 +403,10 @@ static void handler_fsd(State* state, const RvInstr* instr) {
   __HANDLER_STORE_F(u64);
 }
 
-#define __HANDLER_R_ARITHMETIC_S(expr)                                  \
-  f32 rs1 = state->fp_regs[instr->rtype.rs1].s;                         \
-  __attribute__((unused)) f32 rs2 = state->fp_regs[instr->rtype.rs2].s; \
-  state->fp_regs[instr->rtype.rd].s = (f32)(expr);
+#define __HANDLER_R_ARITHMETIC_S(expr)                            \
+  f32 rs1 = state->fp_regs[instr->rs1].s;                         \
+  __attribute__((unused)) f32 rs2 = state->fp_regs[instr->rs2].s; \
+  state->fp_regs[instr->rd].s = (f32)(expr);
 
 static void handler_fadd_s(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_S(rs1 + rs2);
@@ -443,10 +442,10 @@ static inline u32 __sgnj_s(u32 a, u32 b, bool n, bool x) {
   return (a & ~sign) | ((t ^ b) & sign);
 }
 
-#define __HANDLER_SGNJ_S(n, x)                   \
-  u32 rs1 = state->fp_regs[instr->rtype.rs1].wu; \
-  u32 rs2 = state->fp_regs[instr->rtype.rs2].wu; \
-  state->fp_regs[instr->rtype.rd].wu = __sgnj_s(rs1, rs2, n, x);
+#define __HANDLER_SGNJ_S(n, x)             \
+  u32 rs1 = state->fp_regs[instr->rs1].wu; \
+  u32 rs2 = state->fp_regs[instr->rs2].wu; \
+  state->fp_regs[instr->rd].wu = __sgnj_s(rs1, rs2, n, x);
 
 static void handler_fsgnj_s(State* state, const RvInstr* instr) {
   __HANDLER_SGNJ_S(false, false);
@@ -460,10 +459,10 @@ static void handler_fsgnjx_s(State* state, const RvInstr* instr) {
   __HANDLER_SGNJ_S(false, true);
 }
 
-#define __HANDLER_R_ARITHMETIC_D(expr)                                  \
-  f64 rs1 = state->fp_regs[instr->rtype.rs1].d;                         \
-  __attribute__((unused)) f64 rs2 = state->fp_regs[instr->rtype.rs2].d; \
-  state->fp_regs[instr->rtype.rd].d = (expr);
+#define __HANDLER_R_ARITHMETIC_D(expr)                            \
+  f64 rs1 = state->fp_regs[instr->rs1].d;                         \
+  __attribute__((unused)) f64 rs2 = state->fp_regs[instr->rs2].d; \
+  state->fp_regs[instr->rd].d = (expr);
 
 static void handler_fadd_d(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_D(rs1 + rs2);
@@ -499,10 +498,10 @@ static inline u64 __sgnj_d(u64 a, u64 b, bool n, bool x) {
   return (a & ~sign) | ((t ^ b) & sign);
 }
 
-#define __HANDLER_SGNJ_D(n, x)                   \
-  u64 rs1 = state->fp_regs[instr->rtype.rs1].lu; \
-  u64 rs2 = state->fp_regs[instr->rtype.rs2].lu; \
-  state->fp_regs[instr->rtype.rd].lu = __sgnj_d(rs1, rs2, n, x);
+#define __HANDLER_SGNJ_D(n, x)             \
+  u64 rs1 = state->fp_regs[instr->rs1].lu; \
+  u64 rs2 = state->fp_regs[instr->rs2].lu; \
+  state->fp_regs[instr->rd].lu = __sgnj_d(rs1, rs2, n, x);
 
 static void handler_fsgnj_d(State* state, const RvInstr* instr) {
   __HANDLER_SGNJ_D(false, false);
@@ -516,11 +515,11 @@ static void handler_fsgnjx_d(State* state, const RvInstr* instr) {
   __HANDLER_SGNJ_D(false, true);
 }
 
-#define __HANDLER_R_ARITHMETIC_FUSED_S(expr)     \
-  f32 rs1 = state->fp_regs[instr->r4type.rs1].s; \
-  f32 rs2 = state->fp_regs[instr->r4type.rs2].s; \
-  f32 rs3 = state->fp_regs[instr->r4type.rs3].s; \
-  state->fp_regs[instr->r4type.rd].s = (f32)(expr);
+#define __HANDLER_R_ARITHMETIC_FUSED_S(expr) \
+  f32 rs1 = state->fp_regs[instr->rs1].s;    \
+  f32 rs2 = state->fp_regs[instr->rs2].s;    \
+  f32 rs3 = state->fp_regs[instr->rs3].s;    \
+  state->fp_regs[instr->rd].s = (f32)(expr);
 
 static void handler_fmadd_s(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_FUSED_S(rs1 * rs2 + rs3);
@@ -538,11 +537,11 @@ static void handler_fnmadd_s(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_FUSED_S(-(rs1 * rs2) + rs3);
 }
 
-#define __HANDLER_R_ARITHMETIC_FUSED_D(expr)     \
-  f64 rs1 = state->fp_regs[instr->r4type.rs1].d; \
-  f64 rs2 = state->fp_regs[instr->r4type.rs2].d; \
-  f64 rs3 = state->fp_regs[instr->r4type.rs3].d; \
-  state->fp_regs[instr->r4type.rd].d = (expr);
+#define __HANDLER_R_ARITHMETIC_FUSED_D(expr) \
+  f64 rs1 = state->fp_regs[instr->rs1].d;    \
+  f64 rs2 = state->fp_regs[instr->rs2].d;    \
+  f64 rs3 = state->fp_regs[instr->rs3].d;    \
+  state->fp_regs[instr->rd].d = (expr);
 
 static void handler_fmadd_d(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_FUSED_D(rs1 * rs2 + rs3);
@@ -560,10 +559,10 @@ static void handler_fnmadd_d(State* state, const RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_FUSED_D(-(rs1 * rs2) + rs3);
 }
 
-#define __HANDLER_R_COMPARE_S(expr)             \
-  f32 rs1 = state->fp_regs[instr->rtype.rs1].s; \
-  f32 rs2 = state->fp_regs[instr->rtype.rs2].s; \
-  state->gp_regs[instr->rtype.rd] = (u64)(expr);
+#define __HANDLER_R_COMPARE_S(expr)       \
+  f32 rs1 = state->fp_regs[instr->rs1].s; \
+  f32 rs2 = state->fp_regs[instr->rs2].s; \
+  state->gp_regs[instr->rd] = (u64)(expr);
 
 static void handler_fle_s(State* state, const RvInstr* instr) {
   __HANDLER_R_COMPARE_S(rs1 <= rs2);
@@ -577,10 +576,10 @@ static void handler_feq_s(State* state, const RvInstr* instr) {
   __HANDLER_R_COMPARE_S(rs1 == rs2);
 }
 
-#define __HANDLER_R_COMPARE_D(expr)             \
-  f64 rs1 = state->fp_regs[instr->rtype.rs1].d; \
-  f64 rs2 = state->fp_regs[instr->rtype.rs2].d; \
-  state->gp_regs[instr->rtype.rd] = (u64)(expr);
+#define __HANDLER_R_COMPARE_D(expr)       \
+  f64 rs1 = state->fp_regs[instr->rs1].d; \
+  f64 rs2 = state->fp_regs[instr->rs2].d; \
+  state->gp_regs[instr->rd] = (u64)(expr);
 
 static void handler_fle_d(State* state, const RvInstr* instr) {
   __HANDLER_R_COMPARE_D(rs1 <= rs2);
@@ -595,108 +594,93 @@ static void handler_feq_d(State* state, const RvInstr* instr) {
 }
 
 static void handler_fcvt_s_d(State* state, const RvInstr* instr) {
-  state->fp_regs[instr->rtype.rd].s = (f32)state->fp_regs[instr->rtype.rs1].d;
+  state->fp_regs[instr->rd].s = (f32)state->fp_regs[instr->rs1].d;
 }
 
 static void handler_fcvt_d_s(State* state, const RvInstr* instr) {
-  state->fp_regs[instr->rtype.rd].d = (f64)state->fp_regs[instr->rtype.rs1].s;
+  state->fp_regs[instr->rd].d = (f64)state->fp_regs[instr->rs1].s;
 }
 
 static void handler_fcvt_w_s(State* state, const RvInstr* instr) {
-  state->gp_regs[instr->rtype.rd] =
-      (i64)(i32)llrintf(state->fp_regs[instr->rtype.rs1].s);
+  state->gp_regs[instr->rd] = (i64)(i32)llrintf(state->fp_regs[instr->rs1].s);
 }
 
 static void handler_fcvt_wu_s(State* state, const RvInstr* instr) {
-  state->gp_regs[instr->rtype.rd] =
-      (i64)(i32)(u32)llrintf(state->fp_regs[instr->rtype.rs1].s);
+  state->gp_regs[instr->rd] =
+      (i64)(i32)(u32)llrintf(state->fp_regs[instr->rs1].s);
 }
 
 static void handler_fcvt_l_s(State* state, const RvInstr* instr) {
-  state->gp_regs[instr->rtype.rd] =
-      (i64)llrintf(state->fp_regs[instr->rtype.rs1].s);
+  state->gp_regs[instr->rd] = (i64)llrintf(state->fp_regs[instr->rs1].s);
 }
 
 static void handler_fcvt_lu_s(State* state, const RvInstr* instr) {
-  state->gp_regs[instr->rtype.rd] =
-      (u64)llrintf(state->fp_regs[instr->rtype.rs1].s);
+  state->gp_regs[instr->rd] = (u64)llrintf(state->fp_regs[instr->rs1].s);
 }
 
 static void handler_fcvt_s_w(State* state, const RvInstr* instr) {
-  state->fp_regs[instr->rtype.rd].s =
-      (f32)(i32)state->gp_regs[instr->rtype.rs1];
+  state->fp_regs[instr->rd].s = (f32)(i32)state->gp_regs[instr->rs1];
 }
 
 static void handler_fcvt_s_wu(State* state, const RvInstr* instr) {
-  state->fp_regs[instr->rtype.rd].s =
-      (f32)(u32)state->gp_regs[instr->rtype.rs1];
+  state->fp_regs[instr->rd].s = (f32)(u32)state->gp_regs[instr->rs1];
 }
 
 static void handler_fcvt_s_l(State* state, const RvInstr* instr) {
-  state->fp_regs[instr->rtype.rd].s =
-      (f32)(i64)state->gp_regs[instr->rtype.rs1];
+  state->fp_regs[instr->rd].s = (f32)(i64)state->gp_regs[instr->rs1];
 }
 
 static void handler_fcvt_s_lu(State* state, const RvInstr* instr) {
-  state->fp_regs[instr->rtype.rd].s =
-      (f32)(u64)state->gp_regs[instr->rtype.rs1];
+  state->fp_regs[instr->rd].s = (f32)(u64)state->gp_regs[instr->rs1];
 }
 
 static void handler_fcvt_w_d(State* state, const RvInstr* instr) {
-  state->gp_regs[instr->rtype.rd] =
-      (i64)(i32)llrintf(state->fp_regs[instr->rtype.rs1].d);
+  state->gp_regs[instr->rd] = (i64)(i32)llrintf(state->fp_regs[instr->rs1].d);
 }
 
 static void handler_fcvt_wu_d(State* state, const RvInstr* instr) {
-  state->gp_regs[instr->rtype.rd] =
-      (i64)(i32)(u32)llrintf(state->fp_regs[instr->rtype.rs1].d);
+  state->gp_regs[instr->rd] =
+      (i64)(i32)(u32)llrintf(state->fp_regs[instr->rs1].d);
 }
 
 static void handler_fcvt_l_d(State* state, const RvInstr* instr) {
-  state->gp_regs[instr->rtype.rd] =
-      (i64)llrintf(state->fp_regs[instr->rtype.rs1].d);
+  state->gp_regs[instr->rd] = (i64)llrintf(state->fp_regs[instr->rs1].d);
 }
 
 static void handler_fcvt_lu_d(State* state, const RvInstr* instr) {
-  state->gp_regs[instr->rtype.rd] =
-      (u64)llrintf(state->fp_regs[instr->rtype.rs1].d);
+  state->gp_regs[instr->rd] = (u64)llrintf(state->fp_regs[instr->rs1].d);
 }
 
 static void handler_fcvt_d_w(State* state, const RvInstr* instr) {
-  state->fp_regs[instr->rtype.rd].d =
-      (f64)(i32)state->gp_regs[instr->rtype.rs1];
+  state->fp_regs[instr->rd].d = (f64)(i32)state->gp_regs[instr->rs1];
 }
 
 static void handler_fcvt_d_wu(State* state, const RvInstr* instr) {
-  state->fp_regs[instr->rtype.rd].d =
-      (f64)(u32)state->gp_regs[instr->rtype.rs1];
+  state->fp_regs[instr->rd].d = (f64)(u32)state->gp_regs[instr->rs1];
 }
 
 static void handler_fcvt_d_l(State* state, const RvInstr* instr) {
-  state->fp_regs[instr->rtype.rd].d =
-      (f64)(i64)state->gp_regs[instr->rtype.rs1];
+  state->fp_regs[instr->rd].d = (f64)(i64)state->gp_regs[instr->rs1];
 }
 
 static void handler_fcvt_d_lu(State* state, const RvInstr* instr) {
-  state->fp_regs[instr->rtype.rd].d =
-      (f64)(u64)state->gp_regs[instr->rtype.rs1];
+  state->fp_regs[instr->rd].d = (f64)(u64)state->gp_regs[instr->rs1];
 }
 
 static void handler_fmv_x_w(State* state, const RvInstr* instr) {
-  state->gp_regs[instr->rtype.rd] =
-      (u64)(i64)(i32)state->fp_regs[instr->rtype.rs1].wu;
+  state->gp_regs[instr->rd] = (u64)(i64)(i32)state->fp_regs[instr->rs1].wu;
 }
 
 static void handler_fmv_w_x(State* state, const RvInstr* instr) {
-  state->fp_regs[instr->rtype.rd].wu = (u32)state->gp_regs[instr->rtype.rs1];
+  state->fp_regs[instr->rd].wu = (u32)state->gp_regs[instr->rs1];
 }
 
 static void handler_fmv_x_d(State* state, const RvInstr* instr) {
-  state->gp_regs[instr->rtype.rd] = state->fp_regs[instr->rtype.rs1].lu;
+  state->gp_regs[instr->rd] = state->fp_regs[instr->rs1].lu;
 }
 
 static void handler_fmv_d_x(State* state, const RvInstr* instr) {
-  state->fp_regs[instr->rtype.rd].lu = state->gp_regs[instr->rtype.rs1];
+  state->fp_regs[instr->rd].lu = state->gp_regs[instr->rs1];
 }
 
 static inline u64 __classify_s(f32 in) {
@@ -729,8 +713,7 @@ static inline u64 __classify_s(f32 in) {
 }
 
 static void handler_fclass_s(State* state, const RvInstr* instr) {
-  state->gp_regs[instr->rtype.rd] =
-      __classify_s(state->fp_regs[instr->rtype.rs1].s);
+  state->gp_regs[instr->rd] = __classify_s(state->fp_regs[instr->rs1].s);
 }
 
 static inline u64 __classify_d(f64 in) {
@@ -763,8 +746,7 @@ static inline u64 __classify_d(f64 in) {
 }
 
 static void handler_fclass_d(State* state, const RvInstr* instr) {
-  state->gp_regs[instr->rtype.rd] =
-      __classify_d(state->fp_regs[instr->rtype.rs1].d);
+  state->gp_regs[instr->rd] = __classify_d(state->fp_regs[instr->rs1].d);
 }
 
 static void (*rv_instr_handler[kRvInstrNum])(State*, const RvInstr*) = {

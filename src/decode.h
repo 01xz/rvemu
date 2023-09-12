@@ -7,18 +7,11 @@
 #include "types.h"
 
 typedef struct {
-  union {
-    RvInstrR rtype;
-    RvInstrR4 r4type;
-    RvInstrI itype;
-    RvInstrS stype;
-    RvInstrB btype;
-    RvInstrU utype;
-    RvInstrJ jtype;
-    RvInstrG gtype;
-    u32 raw;
-  };
   RvInstrType type;
+  u8 rs1;
+  u8 rs2;
+  u8 rs3;
+  u8 rd;
   i32 imm;
   u16 csr;
   bool rvc;
