@@ -256,30 +256,168 @@ static inline RvInstr decode_j_type(const RvInstrUn *un) {
 }
 
 static inline RvInstr decode_cr_type(const RvInstrUn *un) {
-  return (RvInstr){};
+  return (RvInstr){
+      .rvc = true,
+  };
+}
+
+static inline i32 __get_ci_type_imm_scaled_4(const RvInstrUn *un) {
+  u32 imm8_7_6 = un->citype.imm5 & 0x3;
+  u32 imm8_4_2 = (un->citype.imm5 >> 2) & 0x7;
+  u32 imm8_5_5 = un->citype.imm1;
+  return (imm8_7_6 << 6) | (imm8_5_5 << 5) | (imm8_4_2 << 2);
+}
+
+static inline i32 __get_ci_type_imm_scaled_8(const RvInstrUn *un) {
+  u32 imm9_8_6 = un->citype.imm5 & 0x7;
+  u32 imm9_4_3 = (un->citype.imm5 >> 3) & 0x3;
+  u32 imm9_5_5 = un->citype.imm1;
+  return (imm9_8_6 << 6) | (imm9_5_5 << 5) | (imm9_4_3 << 3);
+}
+
+static inline RvInstr decode_ci_type(const RvInstrUn *un) {
+  return (RvInstr){
+      .rd = un->citype.rs1,
+      .rvc = true,
+  };
+}
+
+static inline i32 __get_css_type_imm_scaled_4(const RvInstrUn *un) {
+  u32 imm8_7_6 = un->csstype.imm & 0x3;
+  u32 imm8_5_2 = (un->csstype.imm >> 2) & 0xf;
+  return (imm8_7_6 << 6) | (imm8_5_2 << 2);
+}
+
+static inline i32 __get_css_type_imm_scaled_8(const RvInstrUn *un) {
+  u32 imm9_8_6 = un->csstype.imm & 0x7;
+  u32 imm9_5_3 = (un->csstype.imm >> 3) & 0x7;
+  return (imm9_8_6 << 6) | (imm9_5_3 << 3);
+}
+
+static inline RvInstr decode_css_type(const RvInstrUn *un) {
+  return (RvInstr){
+      .rs2 = un->csstype.rs2,
+      .rvc = true,
+  };
+}
+
+static inline i32 __get_ciw_type_imm(const RvInstrUn *un) {
+  u32 imm10_5_4 = (un->ciwtype.imm >> 6) & 0x3;
+  u32 imm10_9_6 = (un->ciwtype.imm >> 2) & 0xf;
+  u32 imm10_2_2 = (un->ciwtype.imm >> 1) & 0x1;
+  u32 imm10_3_3 = un->ciwtype.imm & 0x1;
+  return (imm10_9_6 << 6) | (imm10_5_4 << 4) | (imm10_3_3 << 3) |
+         (imm10_2_2 << 2);
+}
+
+static inline RvInstr decode_ciw_type(const RvInstrUn *un) {
+  return (RvInstr){
+      .imm = __get_ciw_type_imm(un),
+      .rd = un->ciwtype.rd + 8,
+      .rvc = true,
+  };
+}
+
+static inline i32 __get_cl_type_imm_scaled_4(const RvInstrUn *un) {
+  u32 imm7_5_3 = un->cltype.imm3;
+  u32 imm7_6_6 = un->cltype.imm2 & 0x1;
+  u32 imm7_2_2 = (un->cltype.imm2 >> 1) & 0x1;
+  return (imm7_6_6 << 6) | (imm7_5_3 << 3) | (imm7_2_2 << 2);
+}
+
+static inline i32 __get_cl_type_imm_scaled_8(const RvInstrUn *un) {
+  u32 imm8_5_3 = un->cltype.imm3;
+  u32 imm8_7_6 = un->cltype.imm2;
+  return (imm8_7_6 << 6) | (imm8_5_3 << 3);
+}
+
+static inline RvInstr decode_cl_type(const RvInstrUn *un) {
+  return (RvInstr){
+      .rs1 = un->cltype.rs1 + 8,
+      .rd = un->cltype.rd + 8,
+      .rvc = true,
+  };
+}
+
+static inline i32 __get_cs_type_imm_scaled_4(const RvInstrUn *un) {
+  u32 imm7_5_3 = un->cstype.imm3;
+  u32 imm7_6_6 = un->cstype.imm2 & 0x1;
+  u32 imm7_2_2 = (un->cstype.imm2 >> 1) & 0x1;
+  return (imm7_6_6 << 6) | (imm7_5_3 << 3) | (imm7_2_2 << 2);
+}
+
+static inline i32 __get_cs_type_imm_scaled_8(const RvInstrUn *un) {
+  u32 imm8_5_3 = un->cstype.imm3;
+  u32 imm8_7_6 = un->cstype.imm2;
+  return (imm8_7_6 << 6) | (imm8_5_3 << 3);
+}
+
+static inline RvInstr decode_cs_type(const RvInstrUn *un) {
+  return (RvInstr){
+      .rs1 = un->cstype.rs1 + 8,
+      .rs2 = un->cstype.rs2 + 8,
+      .rvc = true,
+  };
+}
+
+static inline RvInstr decode_ca_type(const RvInstrUn *un) {
+  return (RvInstr){
+      .rvc = true,
+  };
+}
+
+static inline RvInstr decode_cb_type(const RvInstrUn *un) {
+  return (RvInstr){
+      .rvc = true,
+  };
+}
+
+static inline RvInstr decode_cj_type(const RvInstrUn *un) {
+  return (RvInstr){
+      .rvc = true,
+  };
 }
 
 void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
   RvInstrUn un = {.raw = instr_raw};
   switch (un.gtype.quadrant) {
     case 0x0: {
-      instr->rvc = true;
       switch (un.gtype.instr15_13) {
-        case 0x0:  // C.ADDI4SPN
+        case 0x0:  // CIW-type: C.ADDI4SPN
+          *instr = decode_ciw_type(&un);
           instr->type = kAddi;
-          instr->imm = 0;
+          instr->rs1 = kSp;
+          assert(instr->imm != 0);
           return;
         case 0x1:  // C.FLD
+          *instr = decode_cl_type(&un);
+          instr->type = kFld;
+          instr->imm = __get_cl_type_imm_scaled_8(&un);
           return;
         case 0x2:  // C.LW
+          *instr = decode_cl_type(&un);
+          instr->type = kLw;
+          instr->imm = __get_cl_type_imm_scaled_4(&un);
           return;
         case 0x3:  // C.LD
+          *instr = decode_cl_type(&un);
+          instr->type = kLd;
+          instr->imm = __get_cl_type_imm_scaled_8(&un);
           return;
         case 0x5:  // C.FSD
+          *instr = decode_cs_type(&un);
+          instr->type = kFsd;
+          instr->imm = __get_cs_type_imm_scaled_8(&un);
           return;
         case 0x6:  // C.SW
+          *instr = decode_cs_type(&un);
+          instr->type = kSw;
+          instr->imm = __get_cs_type_imm_scaled_4(&un);
           return;
         case 0x7:  // C.SD
+          *instr = decode_cs_type(&un);
+          instr->type = kSd;
+          instr->imm = __get_cs_type_imm_scaled_8(&un);
           return;
         default:
           __builtin_unreachable();
