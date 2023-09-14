@@ -259,6 +259,8 @@ static inline RvInstr decode_j_type(const RvInstrUn *un) {
 
 static inline RvInstr decode_cr_type(const RvInstrUn *un) {
   return (RvInstr){
+      .rs1 = un->crtype.rs1,
+      .rs2 = un->crtype.rs2,
       .rvc = true,
   };
 }
@@ -275,6 +277,33 @@ static inline i32 __get_ci_type_imm_scaled_8(const RvInstrUn *un) {
   u32 imm9_4_3 = (un->citype.imm5 >> 3) & 0x3;
   u32 imm9_5_5 = un->citype.imm1;
   return (imm9_8_6 << 6) | (imm9_5_5 << 5) | (imm9_4_3 << 3);
+}
+
+static inline i32 __get_ci_type_imm_sign_extended(const RvInstrUn *un) {
+  u32 imm6_4_0 = un->citype.imm5;
+  u32 imm6_5_5 = un->citype.imm1;
+  i32 imm = (imm6_5_5 << 5) | imm6_4_0;
+  return (imm << 26) >> 26;
+}
+
+static inline i32 __get_ci_type_imm_addi16sp(const RvInstrUn *un) {
+  u32 imm10_9_9 = un->citype.imm1;
+  u32 imm10_4_4 = (un->citype.imm5 >> 4) & 0x1;
+  u32 imm10_6_6 = (un->citype.imm5 >> 3) & 0x1;
+  u32 imm10_8_7 = (un->citype.imm5 >> 1) & 0x3;
+  u32 imm10_5_5 = un->citype.imm5 & 0x1;
+
+  i32 imm = (imm10_9_9 << 9) | (imm10_4_4 << 4) | (imm10_6_6 << 6) |
+            (imm10_8_7 << 7) | (imm10_5_5 << 5);
+
+  return (imm << 22) >> 22;
+}
+
+static inline i32 __get_ci_type_imm_lui(const RvInstrUn *un) {
+  u32 imm18_17_17 = un->citype.imm1;
+  u32 imm18_16_12 = un->citype.imm5;
+  i32 imm = (imm18_17_17 << 17) | (imm18_16_12 << 12);
+  return (imm << 14) >> 14;
 }
 
 static inline RvInstr decode_ci_type(const RvInstrUn *un) {
@@ -364,18 +393,60 @@ static inline RvInstr decode_cs_type(const RvInstrUn *un) {
 
 static inline RvInstr decode_ca_type(const RvInstrUn *un) {
   return (RvInstr){
+      .rs1 = un->catype.rs1 + 8,
+      .rs2 = un->catype.rs2 + 8,
+      .rd = un->catype.rs1 + 8,
       .rvc = true,
   };
+}
+
+static inline i32 __get_cb_type_imm(const RvInstrUn *un) {
+  u32 imm9_8_8 = (un->cbtype.imm3 >> 2) & 0x1;
+  u32 imm9_4_3 = un->cbtype.imm3 & 0x3;
+  u32 imm9_7_6 = (un->cbtype.imm5 >> 3) & 0x3;
+  u32 imm9_2_1 = (un->cbtype.imm5 >> 1) & 0x3;
+  u32 imm9_5_5 = un->cbtype.imm5 & 0x1;
+
+  i32 imm = (imm9_8_8 << 8) | (imm9_7_6 << 6) | (imm9_5_5 << 5) |
+            (imm9_4_3 << 3) | (imm9_2_1 << 1);
+
+  return (imm << 23) >> 23;
+}
+
+static inline i32 __get_cb_type_imm_ic(const RvInstrUn *un) {
+  u32 imm6_5_5 = (un->cbtype.imm3 >> 2) & 0x1;
+  u32 imm6_4_0 = un->cbtype.imm5;
+  i32 imm = (imm6_5_5 << 5) | imm6_4_0;
+  return (imm << 26) >> 26;
 }
 
 static inline RvInstr decode_cb_type(const RvInstrUn *un) {
   return (RvInstr){
+      .rs1 = un->cbtype.rs1 + 8,
       .rvc = true,
   };
 }
 
+static inline i32 __get_cj_type_imm(const RvInstrUn *un) {
+  u32 imm12_11_11 = (un->cjtype.imm11 >> 10) & 0x1;
+  u32 imm12_4_4 = (un->cjtype.imm11 >> 9) & 0x1;
+  u32 imm12_9_8 = (un->cjtype.imm11 >> 7) & 0x3;
+  u32 imm12_10_10 = (un->cjtype.imm11 >> 6) & 0x1;
+  u32 imm12_6_6 = (un->cjtype.imm11 >> 5) & 0x1;
+  u32 imm12_7_7 = (un->cjtype.imm11 >> 4) & 0x1;
+  u32 imm12_3_1 = (un->cjtype.imm11 >> 1) & 0x7;
+  u32 imm12_5_5 = un->cjtype.imm11 & 0x1;
+
+  i32 imm12 = (imm12_11_11 << 11) | (imm12_10_10 << 10) | (imm12_9_8 << 8) |
+              (imm12_7_7 << 7) | (imm12_6_6 << 6) | (imm12_5_5 << 5) |
+              (imm12_4_4 << 4) | (imm12_3_1 << 1);
+
+  return (imm12 << 20) >> 20;
+}
+
 static inline RvInstr decode_cj_type(const RvInstrUn *un) {
   return (RvInstr){
+      .imm = __get_cj_type_imm(un),
       .rvc = true,
   };
 }
@@ -428,25 +499,88 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
     }
 
     case 0x1: {
-      instr->rvc = true;
       switch (un.gtype.instr15_13) {
-        case 0x0: {
+        case 0x0:  // C.ADDI
+          *instr = decode_ci_type(&un);
           instr->type = kAddi;
+          instr->rs1 = instr->rd;
+          instr->imm = __get_ci_type_imm_sign_extended(&un);
           return;
-        }
         case 0x1:  // C.ADDIW
+          *instr = decode_ci_type(&un);
+          instr->type = kAddiw;
+          instr->rs1 = instr->rd;
+          instr->imm = __get_ci_type_imm_sign_extended(&un);
           return;
         case 0x2:  // C.LI
+          *instr = decode_ci_type(&un);
+          instr->type = kAddi;
+          instr->rs1 = kZero;
+          instr->imm = __get_ci_type_imm_sign_extended(&un);
           return;
         case 0x3: {
+          *instr = decode_ci_type(&un);
+          if (instr->rd == 2) {  // C.ADDI16SP
+            instr->type = kAddi;
+            instr->rs1 = instr->rd;
+            instr->imm = __get_ci_type_imm_addi16sp(&un);
+          } else {  // C.LUI
+            instr->type = kLui;
+            instr->imm = __get_ci_type_imm_lui(&un);
+          }
         }
         case 0x4: {
+          u32 funct2 = (instr_raw >> 10) & 0x3;
+          if (funct2 != 0x3) {
+            *instr = decode_cb_type(&un);
+            instr->imm = __get_cb_type_imm_ic(&un);
+            instr->rd = instr->rs1;
+            if (funct2 == 0x0) {  // C.SRLI
+              instr->type = kSrli;
+            } else if (funct2 == 0x1) {  // C.SRAI
+              instr->type = kSrai;
+            } else {  // C.ANDI
+              instr->type = kAndi;
+            }
+          } else {
+            *instr = decode_ca_type(&un);
+            u32 funct1 = (instr_raw >> 12) & 0x1;
+            u32 funct2_low = (instr_raw >> 5) & 0x3;
+            if (funct1 == 0x0) {
+              if (funct2_low == 0x0) {  // C.SUB
+                instr->type = kSub;
+              } else if (funct2_low == 0x1) {  // C.XOR
+                instr->type = kXor;
+              } else if (funct2_low == 0x2) {  // C.OR
+                instr->type = kOr;
+              } else {  // C.AND
+                instr->type = kAnd;
+              }
+            } else {
+              if ((funct2_low & 0x1) == 0x0) {  // C.SUBW
+                instr->type = kSubw;
+              } else {  // C.ADDW
+                instr->type = kAddw;
+              }
+            }
+          }
         }
         case 0x5:  // C.J
+          *instr = decode_cj_type(&un);
+          instr->type = kJal;
+          instr->rs1 = kZero;
           return;
         case 0x6:  // C.BEQZ
+          *instr = decode_cb_type(&un);
+          instr->type = kBeq;
+          instr->imm = __get_cb_type_imm(&un);
+          instr->rs2 = kZero;
           return;
         case 0x7:  // C.BNEZ
+          *instr = decode_cb_type(&un);
+          instr->type = kBne;
+          instr->imm = __get_cb_type_imm(&un);
+          instr->rs2 = kZero;
           return;
         default:
           __builtin_unreachable();
