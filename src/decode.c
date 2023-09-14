@@ -2,6 +2,8 @@
 
 #include <assert.h>
 
+#include "instr.h"
+#include "reg.h"
 #include "utils.h"
 
 typedef struct {
