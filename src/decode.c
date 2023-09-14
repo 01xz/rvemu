@@ -86,7 +86,7 @@ typedef struct {
 typedef struct {
   u32 op     : 2;
   u32 rs2    : 5;
-  u32 imm    : 6;
+  u32 imm6   : 6;
   u32 funct3 : 3;
   u32        : 16;
 } RvInstrCSS;
@@ -94,7 +94,7 @@ typedef struct {
 typedef struct {
   u32 op     : 2;
   u32 rd     : 3;
-  u32 imm    : 8;
+  u32 imm8   : 8;
   u32 funct3 : 3;
   u32        : 16;
 } RvInstrCIW;
@@ -129,17 +129,17 @@ typedef struct {
 } RvInstrCA;
 
 typedef struct {
-  u32 op      : 2;
-  u32 offset5 : 5;
-  u32 rs1     : 3;
-  u32 offset3 : 3;
-  u32 funct3  : 3;
-  u32         : 16;
+  u32 op     : 2;
+  u32 imm5   : 5;
+  u32 rs1    : 3;
+  u32 imm3   : 3;
+  u32 funct3 : 3;
+  u32        : 16;
 } RvInstrCB;
 
 typedef struct {
   u32 op     : 2;
-  u32 target : 11;
+  u32 imm11  : 11;
   u32 funct3 : 3;
   u32        : 16;
 } RvInstrCJ;
@@ -283,14 +283,14 @@ static inline RvInstr decode_ci_type(const RvInstrUn *un) {
 }
 
 static inline i32 __get_css_type_imm_scaled_4(const RvInstrUn *un) {
-  u32 imm8_7_6 = un->csstype.imm & 0x3;
-  u32 imm8_5_2 = (un->csstype.imm >> 2) & 0xf;
+  u32 imm8_7_6 = un->csstype.imm6 & 0x3;
+  u32 imm8_5_2 = (un->csstype.imm6 >> 2) & 0xf;
   return (imm8_7_6 << 6) | (imm8_5_2 << 2);
 }
 
 static inline i32 __get_css_type_imm_scaled_8(const RvInstrUn *un) {
-  u32 imm9_8_6 = un->csstype.imm & 0x7;
-  u32 imm9_5_3 = (un->csstype.imm >> 3) & 0x7;
+  u32 imm9_8_6 = un->csstype.imm6 & 0x7;
+  u32 imm9_5_3 = (un->csstype.imm6 >> 3) & 0x7;
   return (imm9_8_6 << 6) | (imm9_5_3 << 3);
 }
 
@@ -302,10 +302,10 @@ static inline RvInstr decode_css_type(const RvInstrUn *un) {
 }
 
 static inline i32 __get_ciw_type_imm(const RvInstrUn *un) {
-  u32 imm10_5_4 = (un->ciwtype.imm >> 6) & 0x3;
-  u32 imm10_9_6 = (un->ciwtype.imm >> 2) & 0xf;
-  u32 imm10_2_2 = (un->ciwtype.imm >> 1) & 0x1;
-  u32 imm10_3_3 = un->ciwtype.imm & 0x1;
+  u32 imm10_5_4 = (un->ciwtype.imm8 >> 6) & 0x3;
+  u32 imm10_9_6 = (un->ciwtype.imm8 >> 2) & 0xf;
+  u32 imm10_2_2 = (un->ciwtype.imm8 >> 1) & 0x1;
+  u32 imm10_3_3 = un->ciwtype.imm8 & 0x1;
   return (imm10_9_6 << 6) | (imm10_5_4 << 4) | (imm10_3_3 << 3) |
          (imm10_2_2 << 2);
 }
