@@ -580,6 +580,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
           *instr = decode_cj_type(&un);
           instr->type = kJal;
           instr->rs1 = kZero;
+          instr->cont = true;
           return;
         case 0x6:  // CB-format: C.BEQZ
           *instr = decode_cb_type(&un);
@@ -631,6 +632,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
             if (instr->rs2 == 0) {  // C.JR
               instr->type = kJalr;
               instr->rd = kZero;
+              instr->cont = true;
             } else {  // C.MV
               instr->type = kAdd;
               instr->rd = instr->rs1;
@@ -643,6 +645,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
             } else if (instr->rs2 == 0) {  // C.JALR
               instr->type = kJalr;
               instr->rd = kRa;
+              instr->cont = true;
             } else {  // C.ADD
               instr->type = kAdd;
               instr->rd = instr->rs1;
@@ -1277,12 +1280,14 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
         case 0x19: {  // I-type: JALR
           *instr = decode_i_type(&un);
           instr->type = kJalr;
+          instr->cont = true;
           return;
         }  // case 0x19
 
         case 0x1b: {  // J-type: JAL
           *instr = decode_j_type(&un);
           instr->type = kJal;
+          instr->cont = true;
           return;
         }  // case 0x1b
 
@@ -1291,6 +1296,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
           switch (un.itype.funct3) {
             case 0x0:  // ECALL
               instr->type = kEcall;
+              instr->cont = true;
               return;
             case 0x1:  // CSRRW
               instr->type = kCsrrw;
