@@ -456,38 +456,38 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
   switch (un.gtype.quadrant) {
     case 0x0: {
       switch (un.gtype.instr15_13) {
-        case 0x0:  // CIW-type: C.ADDI4SPN
+        case 0x0:  // CIW-format: C.ADDI4SPN
           *instr = decode_ciw_type(&un);
           instr->type = kAddi;
           instr->rs1 = kSp;
           assert(instr->imm != 0);
           return;
-        case 0x1:  // C.FLD
+        case 0x1:  // CL-format: C.FLD
           *instr = decode_cl_type(&un);
           instr->type = kFld;
           instr->imm = __get_cl_type_imm_scaled_8(&un);
           return;
-        case 0x2:  // C.LW
+        case 0x2:  // CL-format: C.LW
           *instr = decode_cl_type(&un);
           instr->type = kLw;
           instr->imm = __get_cl_type_imm_scaled_4(&un);
           return;
-        case 0x3:  // C.LD
+        case 0x3:  // CL-format: C.LD
           *instr = decode_cl_type(&un);
           instr->type = kLd;
           instr->imm = __get_cl_type_imm_scaled_8(&un);
           return;
-        case 0x5:  // C.FSD
+        case 0x5:  // CS-format: C.FSD
           *instr = decode_cs_type(&un);
           instr->type = kFsd;
           instr->imm = __get_cs_type_imm_scaled_8(&un);
           return;
-        case 0x6:  // C.SW
+        case 0x6:  // CS-format: C.SW
           *instr = decode_cs_type(&un);
           instr->type = kSw;
           instr->imm = __get_cs_type_imm_scaled_4(&un);
           return;
-        case 0x7:  // C.SD
+        case 0x7:  // CS-format: C.SD
           *instr = decode_cs_type(&un);
           instr->type = kSd;
           instr->imm = __get_cs_type_imm_scaled_8(&un);
@@ -500,25 +500,25 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
 
     case 0x1: {
       switch (un.gtype.instr15_13) {
-        case 0x0:  // C.ADDI
+        case 0x0:  // CI-format: C.ADDI
           *instr = decode_ci_type(&un);
           instr->type = kAddi;
           instr->rs1 = instr->rd;
           instr->imm = __get_ci_type_imm_sign_extended(&un);
           return;
-        case 0x1:  // C.ADDIW
+        case 0x1:  // CI-format: C.ADDIW
           *instr = decode_ci_type(&un);
           instr->type = kAddiw;
           instr->rs1 = instr->rd;
           instr->imm = __get_ci_type_imm_sign_extended(&un);
           return;
-        case 0x2:  // C.LI
+        case 0x2:  // CI-format: C.LI
           *instr = decode_ci_type(&un);
           instr->type = kAddi;
           instr->rs1 = kZero;
           instr->imm = __get_ci_type_imm_sign_extended(&un);
           return;
-        case 0x3: {
+        case 0x3: {  // CI-format
           *instr = decode_ci_type(&un);
           if (instr->rd == 2) {  // C.ADDI16SP
             instr->type = kAddi;
@@ -532,7 +532,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
         }
         case 0x4: {
           u32 funct2 = (instr_raw >> 10) & 0x3;
-          if (funct2 != 0x3) {
+          if (funct2 != 0x3) {  // CB-format
             *instr = decode_cb_type(&un);
             instr->imm = __get_cb_type_imm_ic(&un);
             instr->rd = instr->rs1;
@@ -544,7 +544,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               instr->type = kAndi;
             }
             return;
-          } else {
+          } else {  // CA-format
             *instr = decode_ca_type(&un);
             u32 funct1 = (instr_raw >> 12) & 0x1;
             u32 funct2_low = (instr_raw >> 5) & 0x3;
@@ -569,18 +569,18 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
             }
           }
         }
-        case 0x5:  // C.J
+        case 0x5:  // CJ-format: C.J
           *instr = decode_cj_type(&un);
           instr->type = kJal;
           instr->rs1 = kZero;
           return;
-        case 0x6:  // C.BEQZ
+        case 0x6:  // CB-format: C.BEQZ
           *instr = decode_cb_type(&un);
           instr->type = kBeq;
           instr->imm = __get_cb_type_imm(&un);
           instr->rs2 = kZero;
           return;
-        case 0x7:  // C.BNEZ
+        case 0x7:  // CB-format: C.BNEZ
           *instr = decode_cb_type(&un);
           instr->type = kBne;
           instr->imm = __get_cb_type_imm(&un);
