@@ -306,6 +306,13 @@ static inline i32 __get_ci_type_imm_lui(const RvInstrUn *un) {
   return (imm << 14) >> 14;
 }
 
+static inline i32 __get_ci_type_imm_slli(const RvInstrUn *un) {
+  u32 imm6_5_5 = un->citype.imm1;
+  u32 imm6_4_0 = un->citype.imm5;
+  i32 imm = (imm6_5_5 << 5) | imm6_4_0;
+  return (imm << 26) >> 26;
+}
+
 static inline RvInstr decode_ci_type(const RvInstrUn *un) {
   return (RvInstr){
       .rd = un->citype.rs1,
@@ -496,7 +503,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
           __builtin_unreachable();
       }
       __builtin_unreachable();
-    }
+    }  // quadrant case 0x0
 
     case 0x1: {
       switch (un.gtype.instr15_13) {
@@ -590,33 +597,82 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
           __builtin_unreachable();
       }
       __builtin_unreachable();
-    }
+    }  // quadrant case 0x1
 
     case 0x2: {
-      instr->rvc = true;
       switch (un.gtype.instr15_13) {
-        case 0x0:  // C.SLLI
+        case 0x0:  // CI-format: C.SLLI
+          *instr = decode_ci_type(&un);
           instr->type = kSlli;
+          instr->imm = __get_ci_type_imm_slli(&un);
+          instr->rs1 = instr->rd;
           return;
-        case 0x1:  // C.FLDSP
+        case 0x1:  // CI-format: C.FLDSP
+          *instr = decode_ci_type(&un);
+          instr->type = kFld;
+          instr->imm = __get_ci_type_imm_scaled_8(&un);
+          instr->rs1 = kSp;
           return;
-        case 0x2:  // C.LWSP
+        case 0x2:  // CI-format: C.LWSP
+          *instr = decode_ci_type(&un);
+          instr->type = kLw;
+          instr->imm = __get_ci_type_imm_scaled_4(&un);
+          instr->rs1 = kSp;
           return;
-        case 0x3:  // C.LDSP
+        case 0x3:  // CI-format: C.LDSP
+          *instr = decode_ci_type(&un);
+          instr->type = kLd;
+          instr->imm = __get_ci_type_imm_scaled_8(&un);
+          instr->rs1 = kSp;
           return;
-        case 0x4: {
+        case 0x4: {  // CR-format
+          *instr = decode_cr_type(&un);
+          if (un.crtype.funct4 == 0x8) {
+            if (instr->rs2 == 0) {  // C.JR
+              instr->type = kJalr;
+              instr->rd = kZero;
+            } else {  // C.MV
+              instr->type = kAdd;
+              instr->rd = instr->rs1;
+              instr->rs1 = kZero;
+            }
+            return;
+          } else {
+            if (instr->rs1 == 0) {  // C.EBREAK
+              FATAL("C.EBREAK");
+            } else if (instr->rs2 == 0) {  // C.JALR
+              instr->type = kJalr;
+              instr->rd = kRa;
+            } else {  // C.ADD
+              instr->type = kAdd;
+              instr->rd = instr->rs1;
+            }
+            return;
+          }
         }
-        case 0x5:  // C.FSDSP
+        case 0x5:  // CSS-format: C.FSDSP
+          *instr = decode_css_type(&un);
+          instr->type = kFsd;
+          instr->imm = __get_css_type_imm_scaled_8(&un);
+          instr->rs1 = kSp;
           return;
-        case 0x6:  // C.SWSP
+        case 0x6:  // CSS-format: C.SWSP
+          *instr = decode_css_type(&un);
+          instr->type = kSw;
+          instr->imm = __get_css_type_imm_scaled_4(&un);
+          instr->rs1 = kSp;
           return;
-        case 0x7:  // C.SDSP
+        case 0x7:  // CSS-format: C.SDSP
+          *instr = decode_css_type(&un);
+          instr->type = kSd;
+          instr->imm = __get_css_type_imm_scaled_8(&un);
+          instr->rs1 = kSp;
           return;
         default:
           __builtin_unreachable();
       }
       __builtin_unreachable();
-    }
+    }  // quadrant case 0x2
 
     case 0x3: {  // not rvc
       switch (un.gtype.opcode) {
