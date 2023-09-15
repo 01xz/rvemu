@@ -528,6 +528,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
             instr->type = kLui;
             instr->imm = __get_ci_type_imm_lui(&un);
           }
+          return;
         }
         case 0x4: {
           u32 funct2 = (instr_raw >> 10) & 0x3;
@@ -542,6 +543,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
             } else {  // C.ANDI
               instr->type = kAndi;
             }
+            return;
           } else {
             *instr = decode_ca_type(&un);
             u32 funct1 = (instr_raw >> 12) & 0x1;
@@ -556,12 +558,14 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               } else {  // C.AND
                 instr->type = kAnd;
               }
+              return;
             } else {
               if ((funct2_low & 0x1) == 0x0) {  // C.SUBW
                 instr->type = kSubw;
               } else {  // C.ADDW
                 instr->type = kAddw;
               }
+              return;
             }
           }
         }
