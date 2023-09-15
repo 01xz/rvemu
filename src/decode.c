@@ -615,7 +615,6 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
     }
 
     case 0x3: {  // not rvc
-      instr->rvc = false;
       switch (un.gtype.opcode) {
         case 0x0: {  // I-type
           *instr = decode_i_type(&un);
