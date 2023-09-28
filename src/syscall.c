@@ -1,16 +1,48 @@
 #include "syscall.h"
 
+#include <assert.h>
+#include <stdlib.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "machine.h"
 #include "reg.h"
 #include "types.h"
 #include "utils.h"
 
+static u64 handler_exit(Machine* m) {
+  u64 ec = machine_get_regx(m, kA0);
+  exit(ec);  // #include <stdlib.h>
+}
+
+static u64 handler_write(Machine* m) {
+  u64 fd = machine_get_regx(m, kA0);
+  u64 ptr = machine_get_regx(m, kA1);
+  u64 len = machine_get_regx(m, kA2);
+  return write(fd, (void*)TO_HOST(ptr), (size_t)len);  // #include <unistd.h>
+}
+
+static u64 handler_close(Machine* m) {
+  u64 fd = machine_get_regx(m, kA0);
+  if (fd > 2) return close(fd);  // #include <unistd.h>
+  return 0;
+}
+
+static u64 handler_brk(Machine* m) {
+  u64 addr = machine_get_regx(m, kA0);
+  if (addr == 0) {
+    addr = m->mmu.alloc;
+  }
+  assert(addr >= m->mmu.base);
+  i64 inc = (i64)addr - m->mmu.alloc;
+  mmu_alloc(&m->mmu, inc);
+  return addr;
+}
+
 static u64 handler_fstat(Machine* m) {
   u64 fd = machine_get_regx(m, kA0);
   u64 addr = machine_get_regx(m, kA1);
-  return fstat(fd, (struct stat*)TO_HOST(addr));  // <sys/stat.h>
+  return fstat(fd, (struct stat*)TO_HOST(addr));  // #include <sys/stat.h>
 }
 
 static u64 handler_ni_syscall(Machine* m) {
@@ -18,17 +50,17 @@ static u64 handler_ni_syscall(Machine* m) {
 }
 
 static u64 (*rv_syscall_handler[])(Machine*) = {
-    [kSysExit] = handler_ni_syscall,
+    [kSysExit] = handler_exit,
     [kSysExitGroup] = handler_ni_syscall,
     [kSysGetpid] = handler_ni_syscall,
     [kSysKill] = handler_ni_syscall,
     [kSysTgkill] = handler_ni_syscall,
     [kSysRead] = handler_ni_syscall,
-    [kSysWrite] = handler_ni_syscall,
+    [kSysWrite] = handler_write,
     [kSysOpenat] = handler_ni_syscall,
-    [kSysClose] = handler_ni_syscall,
+    [kSysClose] = handler_close,
     [kSysLseek] = handler_ni_syscall,
-    [kSysBrk] = handler_ni_syscall,
+    [kSysBrk] = handler_brk,
     [kSysLinkat] = handler_ni_syscall,
     [kSysUnlinkat] = handler_ni_syscall,
     [kSysMkdirat] = handler_ni_syscall,
