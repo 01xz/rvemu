@@ -11,8 +11,8 @@ typedef enum {
   kA0, kA1, kA2, kA3, kA4, kA5, kA6, kA7,
   kS2, kS3, kS4, kS5, kS6, kS7, kS8, kS9, kS10, kS11,
   kT3, kT4, kT5, kT6,
-  kGpRegNum,
-} GpRegType;
+  kXRegNum,
+} XRegType;
 
 typedef enum {
   kFt0, kFt1, kFt2, kFt3, kFt4 ,kFt5, kFt6, kFt7,
@@ -20,15 +20,15 @@ typedef enum {
   kFa0, kFa1, kFa2, kFa3, kFa4, kFa5, kFa6, kFa7,
   kFs2, kFs3, kFs4, kFs5, kFs6, kFs7, kFs8, kFs9, kFs10, kFs11,
   kFt8, kFt9, kFt10, kFt11,
-  kFpRegNum,
-} FpRegType;
+  kFRegNum,
+} FRegType;
 
 typedef union {
   u64 lu;
   u32 wu;
   f64 d;
   f32 s;
-} FpReg;
+} FReg;
 
 typedef enum {
   kFflags = 0x001,

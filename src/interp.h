@@ -13,8 +13,8 @@ typedef enum {
 } ExitReason;
 
 typedef struct {
-  u64 gp_regs[kGpRegNum];
-  FpReg fp_regs[kFpRegNum];
+  u64 xregs[kXRegNum];
+  FReg fregs[kFRegNum];
   u64 pc;
   u64 re_enter_pc;
   ExitReason exit_reason;

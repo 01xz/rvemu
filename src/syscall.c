@@ -11,25 +11,25 @@
 #include "utils.h"
 
 static u64 handler_exit(Machine* m) {
-  u64 ec = machine_get_regx(m, kA0);
+  u64 ec = machine_get_xreg(m, kA0);
   exit(ec);  // #include <stdlib.h>
 }
 
 static u64 handler_write(Machine* m) {
-  u64 fd = machine_get_regx(m, kA0);
-  u64 ptr = machine_get_regx(m, kA1);
-  u64 len = machine_get_regx(m, kA2);
+  u64 fd = machine_get_xreg(m, kA0);
+  u64 ptr = machine_get_xreg(m, kA1);
+  u64 len = machine_get_xreg(m, kA2);
   return write(fd, (void*)TO_HOST(ptr), (size_t)len);  // #include <unistd.h>
 }
 
 static u64 handler_close(Machine* m) {
-  u64 fd = machine_get_regx(m, kA0);
+  u64 fd = machine_get_xreg(m, kA0);
   if (fd > 2) return close(fd);  // #include <unistd.h>
   return 0;
 }
 
 static u64 handler_brk(Machine* m) {
-  u64 addr = machine_get_regx(m, kA0);
+  u64 addr = machine_get_xreg(m, kA0);
   if (addr == 0) {
     addr = m->mmu.alloc;
   }
@@ -40,8 +40,8 @@ static u64 handler_brk(Machine* m) {
 }
 
 static u64 handler_fstat(Machine* m) {
-  u64 fd = machine_get_regx(m, kA0);
-  u64 addr = machine_get_regx(m, kA1);
+  u64 fd = machine_get_xreg(m, kA0);
+  u64 addr = machine_get_xreg(m, kA1);
   return fstat(fd, (struct stat*)TO_HOST(addr));  // #include <sys/stat.h>
 }
 
