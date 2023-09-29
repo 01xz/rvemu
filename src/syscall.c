@@ -46,7 +46,7 @@ static u64 handler_fstat(Machine* m) {
 }
 
 static u64 handler_ni_syscall(Machine* m) {
-  FATALF("ni syscall: %lu", machine_get_regx(m, kA7));
+  FATALF(", ni syscall: %lu, pc: %lx", machine_get_xreg(m, kA7), m->state.pc);
 }
 
 static u64 (*rv_syscall_handler[])(Machine*) = {
