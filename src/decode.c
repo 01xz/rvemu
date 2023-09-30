@@ -206,6 +206,18 @@ static inline RvInstr decode_i_type(const RvInstrUn *un) {
   };
 }
 
+static inline i32 __get_i_type_csr(const RvInstrUn *un) {
+  return un->raw >> 20;
+}
+
+static inline RvInstr decode_i_type_with_csr(const RvInstrUn *un) {
+  return (RvInstr){
+      .csr = __get_i_type_csr(un),
+      .rs1 = un->itype.rs1,
+      .rd = un->itype.rd,
+  };
+}
+
 static inline i32 __get_s_type_imm(const RvInstrUn *un) {
   i32 imm = (un->stype.imm11_5 << 5) | un->stype.imm4_0;
   return (imm << 20) >> 20;
@@ -1292,7 +1304,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
         }  // case 0x1b
 
         case 0x1c: {  // I-type
-          *instr = decode_i_type(&un);
+          *instr = decode_i_type_with_csr(&un);
           switch (un.itype.funct3) {
             case 0x0:  // ECALL
               instr->type = kEcall;
