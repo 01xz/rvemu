@@ -1,8 +1,10 @@
 #include "syscall.h"
 
 #include <assert.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 #include "machine.h"
@@ -13,6 +15,13 @@
 static u64 handler_exit(Machine* m) {
   u64 ec = machine_get_xreg(m, kA0);
   exit(ec);  // #include <stdlib.h>
+}
+
+static u64 handler_read(Machine* m) {
+  u64 fd = machine_get_xreg(m, kA0);
+  u64 buf = machine_get_xreg(m, kA1);
+  u64 nbytes = machine_get_xreg(m, kA2);
+  return read(fd, (void*)TO_HOST(buf), (size_t)nbytes);  // #include <unistd.h>
 }
 
 static u64 handler_write(Machine* m) {
@@ -45,6 +54,15 @@ static u64 handler_fstat(Machine* m) {
   return fstat(fd, (struct stat*)TO_HOST(addr));  // #include <sys/stat.h>
 }
 
+static u64 handler_gettimeofday(Machine* m) {
+  u64 tv_addr = machine_get_xreg(m, kA0);
+  u64 tz_addr = machine_get_xreg(m, kA1);
+  struct timeval* tv = (struct timeval*)TO_HOST(tv_addr);
+  struct timezone* tz =
+      (tz_addr != 0) ? (struct timezone*)TO_HOST(tz_addr) : NULL;
+  return gettimeofday(tv, tz);  // #include <sys/time.h>
+}
+
 static u64 handler_ni_syscall(Machine* m) {
   FATALF(", ni syscall: %lu, pc: %lx", machine_get_xreg(m, kA7), m->state.pc);
 }
@@ -55,7 +73,7 @@ static u64 (*rv_syscall_handler[])(Machine*) = {
     [kSysGetpid] = handler_ni_syscall,
     [kSysKill] = handler_ni_syscall,
     [kSysTgkill] = handler_ni_syscall,
-    [kSysRead] = handler_ni_syscall,
+    [kSysRead] = handler_read,
     [kSysWrite] = handler_write,
     [kSysOpenat] = handler_ni_syscall,
     [kSysClose] = handler_close,
@@ -86,7 +104,7 @@ static u64 (*rv_syscall_handler[])(Machine*) = {
     [kSysPrlimit64] = handler_ni_syscall,
     [kSysRtSigaction] = handler_ni_syscall,
     [kSysWritev] = handler_ni_syscall,
-    [kSysGettimeofday] = handler_ni_syscall,
+    [kSysGettimeofday] = handler_gettimeofday,
     [kSysTimes] = handler_ni_syscall,
     [kSysFcntl] = handler_ni_syscall,
     [kSysFtruncate] = handler_ni_syscall,
@@ -106,8 +124,38 @@ static u64 (*rv_syscall_handler[])(Machine*) = {
     [kSysStatx] = handler_ni_syscall,
 };
 
+#define NEWLIB_O_RDONLY 0x0
+#define NEWLIB_O_WRONLY 0x1
+#define NEWLIB_O_RDWR 0x2
+#define NEWLIB_O_APPEND 0x8
+#define NEWLIB_O_CREAT 0x200
+#define NEWLIB_O_TRUNC 0x400
+#define NEWLIB_O_EXCL 0x800
+
+#define RVEMU_SYSCALL_REWRITE_FLAG(flag) \
+  if (flags & NEWLIB_##flag) hostflags |= flag;
+
+static inline int convert_flags(int flags) {
+  int hostflags = 0;
+  RVEMU_SYSCALL_REWRITE_FLAG(O_RDONLY);
+  RVEMU_SYSCALL_REWRITE_FLAG(O_WRONLY);
+  RVEMU_SYSCALL_REWRITE_FLAG(O_RDWR);
+  RVEMU_SYSCALL_REWRITE_FLAG(O_APPEND);
+  RVEMU_SYSCALL_REWRITE_FLAG(O_CREAT);
+  RVEMU_SYSCALL_REWRITE_FLAG(O_TRUNC);
+  RVEMU_SYSCALL_REWRITE_FLAG(O_EXCL);
+  return hostflags;
+}
+
+static u64 handler_sysopen(Machine* m) {
+  u64 file = machine_get_xreg(m, kA0);
+  u64 oflag = machine_get_xreg(m, kA1);
+  u64 mode = machine_get_xreg(m, kA2);
+  return open((char*)TO_HOST(file), convert_flags(oflag), (mode_t)mode);
+}
+
 static u64 (*rv_old_syscall_handler[])(Machine*) = {
-    [kSysOpen - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
+    [kSysOpen - OLD_SYSCALL_THRESHOLD] = handler_sysopen,
     [kSysLink - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
     [kSysUnlink - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
     [kSysMkdir - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
