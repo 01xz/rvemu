@@ -17,9 +17,9 @@ static u64 handler_exit(Machine* m) {
 
 static u64 handler_write(Machine* m) {
   u64 fd = machine_get_xreg(m, kA0);
-  u64 ptr = machine_get_xreg(m, kA1);
-  u64 len = machine_get_xreg(m, kA2);
-  return write(fd, (void*)TO_HOST(ptr), (size_t)len);  // #include <unistd.h>
+  u64 buf = machine_get_xreg(m, kA1);
+  u64 n = machine_get_xreg(m, kA2);
+  return write(fd, (void*)TO_HOST(buf), (size_t)n);  // #include <unistd.h>
 }
 
 static u64 handler_close(Machine* m) {
