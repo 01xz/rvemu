@@ -354,7 +354,7 @@ static void handler_csrrci(State* state, RvInstr* instr) { __HANDLER_CSR(); }
 
 static void handler_flw(State* state, RvInstr* instr) {
   u64 addr = state->xregs[instr->rs1] + (i64)instr->imm;
-  state->fregs[instr->rd].wu = *(u32*)TO_HOST(addr);
+  state->fregs[instr->rd].lu = *(u32*)TO_HOST(addr) | (UINT64_MAX << 32);
 }
 
 static void handler_fld(State* state, RvInstr* instr) {
