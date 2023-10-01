@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "decode.h"
 #include "utils.h"
@@ -415,7 +416,8 @@ static inline u32 __sgnj_s(u32 a, u32 b, bool n, bool x) {
 #define __HANDLER_SGNJ_S(n, x)           \
   u32 rs1 = state->fregs[instr->rs1].wu; \
   u32 rs2 = state->fregs[instr->rs2].wu; \
-  state->fregs[instr->rd].wu = __sgnj_s(rs1, rs2, n, x);
+  state->fregs[instr->rd].lu =           \
+      (u64)__sgnj_s(rs1, rs2, n, x) | (UINT64_MAX << 32);
 
 static void handler_fsgnj_s(State* state, RvInstr* instr) {
   __HANDLER_SGNJ_S(false, false);
