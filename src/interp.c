@@ -441,15 +441,15 @@ static void handler_fadd_d(State* state, RvInstr* instr) {
 }
 
 static void handler_fsub_d(State* state, RvInstr* instr) {
-  __HANDLER_R_ARITHMETIC_D(rs1 + rs2);
+  __HANDLER_R_ARITHMETIC_D(rs1 - rs2);
 }
 
 static void handler_fmul_d(State* state, RvInstr* instr) {
-  __HANDLER_R_ARITHMETIC_D(rs1 + rs2);
+  __HANDLER_R_ARITHMETIC_D(rs1 * rs2);
 }
 
 static void handler_fdiv_d(State* state, RvInstr* instr) {
-  __HANDLER_R_ARITHMETIC_D(rs1 + rs2);
+  __HANDLER_R_ARITHMETIC_D(rs1 / rs2);
 }
 
 static void handler_fsqrt_d(State* state, RvInstr* instr) {
