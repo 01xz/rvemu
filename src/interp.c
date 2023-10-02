@@ -502,11 +502,11 @@ static void handler_fmsub_s(State* state, RvInstr* instr) {
 }
 
 static void handler_fnmsub_s(State* state, RvInstr* instr) {
-  __HANDLER_R_ARITHMETIC_FUSED_S(-(rs1 * rs2) - rs3);
+  __HANDLER_R_ARITHMETIC_FUSED_S(-(rs1 * rs2) + rs3);
 }
 
 static void handler_fnmadd_s(State* state, RvInstr* instr) {
-  __HANDLER_R_ARITHMETIC_FUSED_S(-(rs1 * rs2) + rs3);
+  __HANDLER_R_ARITHMETIC_FUSED_S(-(rs1 * rs2) - rs3);
 }
 
 #define __HANDLER_R_ARITHMETIC_FUSED_D(expr) \
@@ -524,11 +524,11 @@ static void handler_fmsub_d(State* state, RvInstr* instr) {
 }
 
 static void handler_fnmsub_d(State* state, RvInstr* instr) {
-  __HANDLER_R_ARITHMETIC_FUSED_D(-(rs1 * rs2) - rs3);
+  __HANDLER_R_ARITHMETIC_FUSED_D(-(rs1 * rs2) + rs3);
 }
 
 static void handler_fnmadd_d(State* state, RvInstr* instr) {
-  __HANDLER_R_ARITHMETIC_FUSED_D(-(rs1 * rs2) + rs3);
+  __HANDLER_R_ARITHMETIC_FUSED_D(-(rs1 * rs2) - rs3);
 }
 
 #define __HANDLER_R_COMPARE_S(expr)     \
