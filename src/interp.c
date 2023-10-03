@@ -606,19 +606,19 @@ static void handler_fcvt_s_lu(State* state, RvInstr* instr) {
 }
 
 static void handler_fcvt_w_d(State* state, RvInstr* instr) {
-  state->xregs[instr->rd] = (i64)(i32)llrintf(state->fregs[instr->rs1].d);
+  state->xregs[instr->rd] = (i64)(i32)llrint(state->fregs[instr->rs1].d);
 }
 
 static void handler_fcvt_wu_d(State* state, RvInstr* instr) {
-  state->xregs[instr->rd] = (i64)(i32)(u32)llrintf(state->fregs[instr->rs1].d);
+  state->xregs[instr->rd] = (i64)(i32)(u32)llrint(state->fregs[instr->rs1].d);
 }
 
 static void handler_fcvt_l_d(State* state, RvInstr* instr) {
-  state->xregs[instr->rd] = (i64)llrintf(state->fregs[instr->rs1].d);
+  state->xregs[instr->rd] = (i64)llrint(state->fregs[instr->rs1].d);
 }
 
 static void handler_fcvt_lu_d(State* state, RvInstr* instr) {
-  state->xregs[instr->rd] = (u64)llrintf(state->fregs[instr->rs1].d);
+  state->xregs[instr->rd] = (u64)llrint(state->fregs[instr->rs1].d);
 }
 
 static void handler_fcvt_d_w(State* state, RvInstr* instr) {
