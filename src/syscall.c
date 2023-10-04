@@ -154,6 +154,8 @@ static u64 handler_sysopen(Machine* m) {
   return open((char*)TO_HOST(file), convert_flags(oflag), (mode_t)mode);
 }
 
+#define OLD_SYSCALL_THRESHOLD 1024
+
 static u64 (*rv_old_syscall_handler[])(Machine*) = {
     [kSysOpen - OLD_SYSCALL_THRESHOLD] = handler_sysopen,
     [kSysLink - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,

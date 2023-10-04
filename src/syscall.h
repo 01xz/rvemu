@@ -73,8 +73,6 @@ typedef enum {
   kSysTime = 1062,
 } OldSysCallType;
 
-#define OLD_SYSCALL_THRESHOLD 1024
-
 u64 do_syscall(Machine*, u64);
 
 #endif  // RVEMU_SYSCALL_H_
