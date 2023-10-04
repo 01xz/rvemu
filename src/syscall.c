@@ -12,6 +12,29 @@
 #include "types.h"
 #include "utils.h"
 
+#define NEWLIB_O_RDONLY 0x0
+#define NEWLIB_O_WRONLY 0x1
+#define NEWLIB_O_RDWR 0x2
+#define NEWLIB_O_APPEND 0x8
+#define NEWLIB_O_CREAT 0x200
+#define NEWLIB_O_TRUNC 0x400
+#define NEWLIB_O_EXCL 0x800
+
+#define RVEMU_SYSCALL_REWRITE_FLAG(flag) \
+  if (flags & NEWLIB_##flag) hostflags |= flag;
+
+static inline int convert_flags(int flags) {
+  int hostflags = 0;
+  RVEMU_SYSCALL_REWRITE_FLAG(O_RDONLY);
+  RVEMU_SYSCALL_REWRITE_FLAG(O_WRONLY);
+  RVEMU_SYSCALL_REWRITE_FLAG(O_RDWR);
+  RVEMU_SYSCALL_REWRITE_FLAG(O_APPEND);
+  RVEMU_SYSCALL_REWRITE_FLAG(O_CREAT);
+  RVEMU_SYSCALL_REWRITE_FLAG(O_TRUNC);
+  RVEMU_SYSCALL_REWRITE_FLAG(O_EXCL);
+  return hostflags;
+}
+
 static u64 handler_exit(Machine* m) {
   u64 ec = machine_get_xreg(m, kA0);
   exit(ec);  // #include <stdlib.h>
@@ -31,10 +54,26 @@ static u64 handler_write(Machine* m) {
   return write(fd, (void*)TO_HOST(buf), (size_t)n);  // #include <unistd.h>
 }
 
+static u64 handler_openat(Machine* m) {
+  u64 fd = machine_get_xreg(m, kA0);
+  u64 file = machine_get_xreg(m, kA1);
+  u64 oflag = machine_get_xreg(m, kA2);
+  u64 mode = machine_get_xreg(m, kA3);
+  return openat(fd, (char*)TO_HOST(file), convert_flags(oflag),
+                (mode_t)mode);  // #include <fcntl.h>
+}
+
 static u64 handler_close(Machine* m) {
   u64 fd = machine_get_xreg(m, kA0);
   if (fd > 2) return close(fd);  // #include <unistd.h>
   return 0;
+}
+
+static u64 handler_lseek(Machine* m) {
+  u64 fd = machine_get_xreg(m, kA0);
+  u64 offset = machine_get_xreg(m, kA1);
+  u64 whence = machine_get_xreg(m, kA2);
+  return lseek(fd, (off_t)offset, whence);  // #include <unistd.h>
 }
 
 static u64 handler_brk(Machine* m) {
@@ -69,15 +108,15 @@ static u64 handler_ni_syscall(Machine* m) {
 
 static u64 (*rv_syscall_handler[])(Machine*) = {
     [kSysExit] = handler_exit,
-    [kSysExitGroup] = handler_ni_syscall,
+    [kSysExitGroup] = handler_exit,
     [kSysGetpid] = handler_ni_syscall,
     [kSysKill] = handler_ni_syscall,
     [kSysTgkill] = handler_ni_syscall,
     [kSysRead] = handler_read,
     [kSysWrite] = handler_write,
-    [kSysOpenat] = handler_ni_syscall,
+    [kSysOpenat] = handler_openat,
     [kSysClose] = handler_close,
-    [kSysLseek] = handler_ni_syscall,
+    [kSysLseek] = handler_lseek,
     [kSysBrk] = handler_brk,
     [kSysLinkat] = handler_ni_syscall,
     [kSysUnlinkat] = handler_ni_syscall,
@@ -123,29 +162,6 @@ static u64 (*rv_syscall_handler[])(Machine*) = {
     [kSysMadvise] = handler_ni_syscall,
     [kSysStatx] = handler_ni_syscall,
 };
-
-#define NEWLIB_O_RDONLY 0x0
-#define NEWLIB_O_WRONLY 0x1
-#define NEWLIB_O_RDWR 0x2
-#define NEWLIB_O_APPEND 0x8
-#define NEWLIB_O_CREAT 0x200
-#define NEWLIB_O_TRUNC 0x400
-#define NEWLIB_O_EXCL 0x800
-
-#define RVEMU_SYSCALL_REWRITE_FLAG(flag) \
-  if (flags & NEWLIB_##flag) hostflags |= flag;
-
-static inline int convert_flags(int flags) {
-  int hostflags = 0;
-  RVEMU_SYSCALL_REWRITE_FLAG(O_RDONLY);
-  RVEMU_SYSCALL_REWRITE_FLAG(O_WRONLY);
-  RVEMU_SYSCALL_REWRITE_FLAG(O_RDWR);
-  RVEMU_SYSCALL_REWRITE_FLAG(O_APPEND);
-  RVEMU_SYSCALL_REWRITE_FLAG(O_CREAT);
-  RVEMU_SYSCALL_REWRITE_FLAG(O_TRUNC);
-  RVEMU_SYSCALL_REWRITE_FLAG(O_EXCL);
-  return hostflags;
-}
 
 static u64 handler_sysopen(Machine* m) {
   u64 file = machine_get_xreg(m, kA0);
