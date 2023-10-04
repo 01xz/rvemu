@@ -167,7 +167,8 @@ static u64 handler_sysopen(Machine* m) {
   u64 file = machine_get_xreg(m, kA0);
   u64 oflag = machine_get_xreg(m, kA1);
   u64 mode = machine_get_xreg(m, kA2);
-  return open((char*)TO_HOST(file), convert_flags(oflag), (mode_t)mode);
+  return open((char*)TO_HOST(file), convert_flags(oflag),
+              (mode_t)mode);  // #include <fcntl.h>
 }
 
 #define OLD_SYSCALL_THRESHOLD 1024
