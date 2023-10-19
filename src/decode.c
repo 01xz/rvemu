@@ -206,7 +206,7 @@ static inline RvInstr decode_i_type(const RvInstrUn *un) {
   };
 }
 
-static inline i32 __get_i_type_csr(const RvInstrUn *un) {
+static inline u16 __get_i_type_csr(const RvInstrUn *un) {
   return un->raw >> 20;
 }
 
