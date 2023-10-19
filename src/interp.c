@@ -7,6 +7,34 @@
 #include "decode.h"
 #include "utils.h"
 
+static u64 load_csr(const State* state, u16 addr) {
+  if (addr == kSie) {
+    return state->csrs[kMie] & state->csrs[kMideleg];
+  }
+  return state->csrs[addr];
+}
+
+static void store_csr(State* state, u16 addr, u64 value) {
+  if (addr == kSie) {
+    state->csrs[addr] = (state->csrs[kMie] & ~(state->csrs[kMideleg])) |
+                        (value & state->csrs[kMideleg]);
+    return;
+  }
+  state->csrs[addr] = value;
+}
+
+static void update_paging(State* state, u16 addr) {
+  state->page_table =
+      (load_csr(state, kSatp) & (((u64)1 << 44) - 1)) * PAGE_SIZE;
+  u64 mode = load_csr(state, kSatp) >> 60;
+
+  if (mode == 8) {
+    state->enable_paging = true;
+  } else {
+    state->enable_paging = false;
+  }
+}
+
 #define __HANDLER_LOAD(type)                             \
   u64 addr = state->xregs[instr->rs1] + (i64)instr->imm; \
   state->xregs[instr->rd] = *(type*)TO_HOST(addr);
@@ -329,28 +357,37 @@ static void handler_fence(State* state, RvInstr* instr) {}
 
 static void handler_fencei(State* state, RvInstr* instr) {}
 
-#define __HANDLER_CSR()   \
-  switch (instr->csr) {   \
-    case kFflags:         \
-    case kFrm:            \
-    case kFcsr:           \
-      break;              \
-    default:              \
-      FATAL("TODO: csr"); \
-  }                       \
-  state->xregs[instr->rd] = 0;
+#define __HANDLER_CSR(expr)            \
+  u64 t = load_csr(state, instr->csr); \
+  store_csr(state, instr->csr, expr);  \
+  state->xregs[instr->rd] = t;         \
+  if (instr->csr == kSatp) {           \
+    update_paging(state, instr->csr);  \
+  }
 
-static void handler_csrrw(State* state, RvInstr* instr) { __HANDLER_CSR(); }
+static void handler_csrrw(State* state, RvInstr* instr) {
+  __HANDLER_CSR(state->xregs[instr->rs1]);
+}
 
-static void handler_csrrs(State* state, RvInstr* instr) { __HANDLER_CSR(); }
+static void handler_csrrs(State* state, RvInstr* instr) {
+  __HANDLER_CSR(t | state->xregs[instr->rs1]);
+}
 
-static void handler_csrrc(State* state, RvInstr* instr) { __HANDLER_CSR(); }
+static void handler_csrrc(State* state, RvInstr* instr) {
+  __HANDLER_CSR(t & ~(state->xregs[instr->rs1]));
+}
 
-static void handler_csrrwi(State* state, RvInstr* instr) { __HANDLER_CSR(); }
+static void handler_csrrwi(State* state, RvInstr* instr) {
+  __HANDLER_CSR(instr->rs1);
+}
 
-static void handler_csrrsi(State* state, RvInstr* instr) { __HANDLER_CSR(); }
+static void handler_csrrsi(State* state, RvInstr* instr) {
+  __HANDLER_CSR(t | instr->rs1);
+}
 
-static void handler_csrrci(State* state, RvInstr* instr) { __HANDLER_CSR(); }
+static void handler_csrrci(State* state, RvInstr* instr) {
+  __HANDLER_CSR(t & ~(instr->rs1));
+}
 
 static void handler_flw(State* state, RvInstr* instr) {
   u64 addr = state->xregs[instr->rs1] + (i64)instr->imm;
