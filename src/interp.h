@@ -1,6 +1,7 @@
 #ifndef RVEMU_INTERP_H_
 #define RVEMU_INTERP_H_
 
+#include "csr.h"
 #include "reg.h"
 #include "types.h"
 
@@ -15,6 +16,7 @@ typedef enum {
 typedef struct {
   u64 xregs[kXRegNum];
   FReg fregs[kFRegNum];
+  u64 csrs[kCsrNum];
   u64 pc;
   u64 re_enter_pc;
   ExitReason exit_reason;

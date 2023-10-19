@@ -30,10 +30,4 @@ typedef union {
   f32 s;
 } FReg;
 
-typedef enum {
-  kFflags = 0x001,
-  kFrm    = 0x002,
-  kFcsr   = 0x003,
-} Csr;
-
 #endif  // RVEMU_REG_H_
