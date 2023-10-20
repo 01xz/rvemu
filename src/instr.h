@@ -2,8 +2,10 @@
 #define RVEMU_INSTR_H_
 
 typedef enum {
+  // clang-format off
   kLb, kLh, kLw, kLd, kLbu, kLhu, kLwu,
-  kFence, kFenceI,
+  kFence,
+  kFenceI,
   kAddi, kSlli, kSlti, kSltiu, kXori, kSrli, kSrai, kOri, kAndi,
   kAuipc,
   kAddiw, kSlliw, kSrliw, kSraiw,
@@ -40,6 +42,7 @@ typedef enum {
   kFmvXD, kFclassD,
   kFmvDX,
   kRvInstrNum,
+  // clang-format on
 } RvInstrType;
 
 #endif  // RVEMU_INSTR_H_

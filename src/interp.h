@@ -30,10 +30,10 @@ typedef struct {
   u64 csrs[kCsrNum];
   u64 pc;
   u64 re_enter_pc;
-  ExitReason exit_reason;
   Mode mode;
   bool enable_paging;
   u64 page_table;
+  ExitReason exit_reason;
 } State;
 
 void exec_block_interp(State*);
