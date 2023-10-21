@@ -308,7 +308,7 @@ static void handler_lui(State* state, RvInstr* instr) {
   u64 rs2 = state->xregs[instr->rs2];                 \
   if (condi) {                                        \
     state->re_enter_pc = state->pc + (i64)instr->imm; \
-    state->exit_reason = kDirectBranch;            \
+    state->exit_reason = kDirectBranch;               \
     instr->cont = true;                               \
   }
 
@@ -337,8 +337,9 @@ static void handler_bgeu(State* state, RvInstr* instr) {
 }
 
 static void handler_jalr(State* state, RvInstr* instr) {
+  u64 xreg_rs1 = state->xregs[instr->rs1];
   state->xregs[instr->rd] = state->pc + (instr->rvc ? 2 : 4);
-  state->re_enter_pc = (state->xregs[instr->rs1] + (i64)instr->imm) & ~(u64)1;
+  state->re_enter_pc = (xreg_rs1 + (i64)instr->imm) & ~(u64)1;
   state->exit_reason = kIndirectBranch;
 }
 
