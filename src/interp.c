@@ -7,32 +7,58 @@
 #include "decode.h"
 #include "utils.h"
 
-static u64 load_csr(const State* state, u16 addr) {
-  if (addr == CSR_SIE) {
-    return state->csrs[CSR_MIE] & state->csrs[CSR_MIDELEG];
-  }
-  return state->csrs[addr];
+static void handler_lui(State* state, RvInstr* instr) {
+  state->xregs[instr->rd] = (i64)instr->imm;
 }
 
-static void store_csr(State* state, u16 addr, u64 value) {
-  if (addr == CSR_SIE) {
-    state->csrs[addr] = (state->csrs[CSR_MIE] & ~(state->csrs[CSR_MIDELEG])) |
-                        (value & state->csrs[CSR_MIDELEG]);
-    return;
-  }
-  state->csrs[addr] = value;
+static void handler_auipc(State* state, RvInstr* instr) {
+  state->xregs[instr->rd] = state->pc + (i64)instr->imm;
 }
 
-static void update_paging(State* state, u16 addr) {
-  state->page_table =
-      (load_csr(state, CSR_SATP) & (((u64)1 << 44) - 1)) * PAGE_SIZE;
-  u64 mode = load_csr(state, CSR_SATP) >> 60;
+static void handler_jal(State* state, RvInstr* instr) {
+  state->xregs[instr->rd] = state->pc + (instr->rvc ? 2 : 4);
+  state->re_enter_pc = state->pc + (i64)instr->imm;
+  state->exit_reason = kDirectBranch;
+}
 
-  if (mode == 8) {
-    state->enable_paging = true;
-  } else {
-    state->enable_paging = false;
+static void handler_jalr(State* state, RvInstr* instr) {
+  u64 xreg_rs1 = state->xregs[instr->rs1];
+  state->xregs[instr->rd] = state->pc + (instr->rvc ? 2 : 4);
+  state->re_enter_pc = (xreg_rs1 + (i64)instr->imm) & ~(u64)1;
+  state->exit_reason = kIndirectBranch;
+}
+
+#define __HANDLER_BRANCH(condi)                       \
+  u64 rs1 = state->xregs[instr->rs1];                 \
+  u64 rs2 = state->xregs[instr->rs2];                 \
+  if (condi) {                                        \
+    state->re_enter_pc = state->pc + (i64)instr->imm; \
+    state->exit_reason = kDirectBranch;               \
+    instr->cont = true;                               \
   }
+
+static void handler_beq(State* state, RvInstr* instr) {
+  __HANDLER_BRANCH(rs1 == rs2);
+}
+
+static void handler_bne(State* state, RvInstr* instr) {
+  __HANDLER_BRANCH(rs1 != rs2);
+}
+
+static void handler_blt(State* state, RvInstr* instr) {
+  __HANDLER_BRANCH((i64)rs1 < (i64)rs2);
+}
+
+static void handler_bge(State* state, RvInstr* instr) {
+  __HANDLER_BRANCH((i64)rs1 >= (i64)rs2);
+}
+
+static void handler_bltu(State* state, RvInstr* instr) {
+  __HANDLER_BRANCH(rs1 < rs2);
+}
+
+static void handler_bgeu(State* state, RvInstr* instr) {
+  __HANDLER_BRANCH(rs1 >= rs2);
 }
 
 #define __HANDLER_LOAD(type)                             \
@@ -74,10 +100,6 @@ static void handler_addi(State* state, RvInstr* instr) {
   __HANDLER_I_ARITHMETIC(rs1 + imm);
 }
 
-static void handler_slli(State* state, RvInstr* instr) {
-  __HANDLER_I_ARITHMETIC(rs1 << (imm & 0x3f));
-}
-
 static void handler_slti(State* state, RvInstr* instr) {
   __HANDLER_I_ARITHMETIC((i64)rs1 < (i64)imm);
 }
@@ -90,20 +112,24 @@ static void handler_xori(State* state, RvInstr* instr) {
   __HANDLER_I_ARITHMETIC(rs1 ^ (u64)imm);
 }
 
-static void handler_srli(State* state, RvInstr* instr) {
-  __HANDLER_I_ARITHMETIC(rs1 >> (imm & 0x3f));
-}
-
-static void handler_srai(State* state, RvInstr* instr) {
-  __HANDLER_I_ARITHMETIC((i64)rs1 >> (imm & 0x3f));
-}
-
 static void handler_ori(State* state, RvInstr* instr) {
   __HANDLER_I_ARITHMETIC(rs1 | (u64)imm);
 }
 
 static void handler_andi(State* state, RvInstr* instr) {
   __HANDLER_I_ARITHMETIC(rs1 & (u64)imm);
+}
+
+static void handler_slli(State* state, RvInstr* instr) {
+  __HANDLER_I_ARITHMETIC(rs1 << (imm & 0x3f));
+}
+
+static void handler_srli(State* state, RvInstr* instr) {
+  __HANDLER_I_ARITHMETIC(rs1 >> (imm & 0x3f));
+}
+
+static void handler_srai(State* state, RvInstr* instr) {
+  __HANDLER_I_ARITHMETIC((i64)rs1 >> (imm & 0x3f));
 }
 
 static void handler_addiw(State* state, RvInstr* instr) {
@@ -165,6 +191,26 @@ static void handler_or(State* state, RvInstr* instr) {
 
 static void handler_and(State* state, RvInstr* instr) {
   __HANDLER_R_ARITHMETIC(rs1 & rs2);
+}
+
+static void handler_addw(State* state, RvInstr* instr) {
+  __HANDLER_R_ARITHMETIC((i64)(i32)(rs1 + rs2));
+}
+
+static void handler_subw(State* state, RvInstr* instr) {
+  __HANDLER_R_ARITHMETIC((i64)(i32)(rs1 - rs2));
+}
+
+static void handler_sllw(State* state, RvInstr* instr) {
+  __HANDLER_R_ARITHMETIC((i64)(i32)(rs1 << (rs2 & 0x1f)));
+}
+
+static void handler_srlw(State* state, RvInstr* instr) {
+  __HANDLER_R_ARITHMETIC((i64)(i32)((u32)rs1 >> (rs2 & 0x1f)));
+}
+
+static void handler_sraw(State* state, RvInstr* instr) {
+  __HANDLER_R_ARITHMETIC((i64)(i32)((i32)rs1 >> (rs2 & 0x1f)));
 }
 
 static void handler_mul(State* state, RvInstr* instr) {
@@ -255,26 +301,6 @@ static void handler_remu(State* state, RvInstr* instr) {
   __HANDLER_R_ARITHMETIC(__remu(rs1, rs2));
 }
 
-static void handler_addw(State* state, RvInstr* instr) {
-  __HANDLER_R_ARITHMETIC((i64)(i32)(rs1 + rs2));
-}
-
-static void handler_subw(State* state, RvInstr* instr) {
-  __HANDLER_R_ARITHMETIC((i64)(i32)(rs1 - rs2));
-}
-
-static void handler_sllw(State* state, RvInstr* instr) {
-  __HANDLER_R_ARITHMETIC((i64)(i32)(rs1 << (rs2 & 0x1f)));
-}
-
-static void handler_srlw(State* state, RvInstr* instr) {
-  __HANDLER_R_ARITHMETIC((i64)(i32)((u32)rs1 >> (rs2 & 0x1f)));
-}
-
-static void handler_sraw(State* state, RvInstr* instr) {
-  __HANDLER_R_ARITHMETIC((i64)(i32)((i32)rs1 >> (rs2 & 0x1f)));
-}
-
 static void handler_mulw(State* state, RvInstr* instr) {
   __HANDLER_R_ARITHMETIC((i64)(i32)(rs1 * rs2));
 }
@@ -295,63 +321,37 @@ static void handler_remuw(State* state, RvInstr* instr) {
   __HANDLER_R_ARITHMETIC((i64)(i32)__remu((u32)rs1, (u32)rs2));
 }
 
-static void handler_auipc(State* state, RvInstr* instr) {
-  state->xregs[instr->rd] = state->pc + (i64)instr->imm;
-}
-
-static void handler_lui(State* state, RvInstr* instr) {
-  state->xregs[instr->rd] = (i64)instr->imm;
-}
-
-#define __HANDLER_BRANCH(condi)                       \
-  u64 rs1 = state->xregs[instr->rs1];                 \
-  u64 rs2 = state->xregs[instr->rs2];                 \
-  if (condi) {                                        \
-    state->re_enter_pc = state->pc + (i64)instr->imm; \
-    state->exit_reason = kDirectBranch;               \
-    instr->cont = true;                               \
-  }
-
-static void handler_beq(State* state, RvInstr* instr) {
-  __HANDLER_BRANCH(rs1 == rs2);
-}
-
-static void handler_bne(State* state, RvInstr* instr) {
-  __HANDLER_BRANCH(rs1 != rs2);
-}
-
-static void handler_blt(State* state, RvInstr* instr) {
-  __HANDLER_BRANCH((i64)rs1 < (i64)rs2);
-}
-
-static void handler_bge(State* state, RvInstr* instr) {
-  __HANDLER_BRANCH((i64)rs1 >= (i64)rs2);
-}
-
-static void handler_bltu(State* state, RvInstr* instr) {
-  __HANDLER_BRANCH(rs1 < rs2);
-}
-
-static void handler_bgeu(State* state, RvInstr* instr) {
-  __HANDLER_BRANCH(rs1 >= rs2);
-}
-
-static void handler_jalr(State* state, RvInstr* instr) {
-  u64 xreg_rs1 = state->xregs[instr->rs1];
-  state->xregs[instr->rd] = state->pc + (instr->rvc ? 2 : 4);
-  state->re_enter_pc = (xreg_rs1 + (i64)instr->imm) & ~(u64)1;
-  state->exit_reason = kIndirectBranch;
-}
-
-static void handler_jal(State* state, RvInstr* instr) {
-  state->xregs[instr->rd] = state->pc + (instr->rvc ? 2 : 4);
-  state->re_enter_pc = state->pc + (i64)instr->imm;
-  state->exit_reason = kDirectBranch;
-}
-
 static void handler_ecall(State* state, RvInstr* instr) {
   state->re_enter_pc = state->pc + 4;
   state->exit_reason = kECall;
+}
+
+static u64 load_csr(const State* state, u16 addr) {
+  if (addr == CSR_SIE) {
+    return state->csrs[CSR_MIE] & state->csrs[CSR_MIDELEG];
+  }
+  return state->csrs[addr];
+}
+
+static void store_csr(State* state, u16 addr, u64 value) {
+  if (addr == CSR_SIE) {
+    state->csrs[addr] = (state->csrs[CSR_MIE] & ~(state->csrs[CSR_MIDELEG])) |
+                        (value & state->csrs[CSR_MIDELEG]);
+    return;
+  }
+  state->csrs[addr] = value;
+}
+
+static void update_paging(State* state, u16 addr) {
+  state->page_table =
+      (load_csr(state, CSR_SATP) & (((u64)1 << 44) - 1)) * PAGE_SIZE;
+  u64 mode = load_csr(state, CSR_SATP) >> 60;
+
+  if (mode == 8) {
+    state->enable_paging = true;
+  } else {
+    state->enable_paging = false;
+  }
 }
 
 #define __HANDLER_CSR(expr)            \
