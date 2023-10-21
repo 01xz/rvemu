@@ -8,16 +8,16 @@
 #include "utils.h"
 
 static u64 load_csr(const State* state, u16 addr) {
-  if (addr == kSie) {
-    return state->csrs[kMie] & state->csrs[kMideleg];
+  if (addr == CSR_SIE) {
+    return state->csrs[CSR_MIE] & state->csrs[CSR_MIDELEG];
   }
   return state->csrs[addr];
 }
 
 static void store_csr(State* state, u16 addr, u64 value) {
-  if (addr == kSie) {
-    state->csrs[addr] = (state->csrs[kMie] & ~(state->csrs[kMideleg])) |
-                        (value & state->csrs[kMideleg]);
+  if (addr == CSR_SIE) {
+    state->csrs[addr] = (state->csrs[CSR_MIE] & ~(state->csrs[CSR_MIDELEG])) |
+                        (value & state->csrs[CSR_MIDELEG]);
     return;
   }
   state->csrs[addr] = value;
@@ -25,8 +25,8 @@ static void store_csr(State* state, u16 addr, u64 value) {
 
 static void update_paging(State* state, u16 addr) {
   state->page_table =
-      (load_csr(state, kSatp) & (((u64)1 << 44) - 1)) * PAGE_SIZE;
-  u64 mode = load_csr(state, kSatp) >> 60;
+      (load_csr(state, CSR_SATP) & (((u64)1 << 44) - 1)) * PAGE_SIZE;
+  u64 mode = load_csr(state, CSR_SATP) >> 60;
 
   if (mode == 8) {
     state->enable_paging = true;
@@ -308,7 +308,7 @@ static void handler_lui(State* state, RvInstr* instr) {
   u64 rs2 = state->xregs[instr->rs2];                 \
   if (condi) {                                        \
     state->re_enter_pc = state->pc + (i64)instr->imm; \
-    state->exit_reason = kDirectBranch;               \
+    state->exit_reason = kDirectBranch;            \
     instr->cont = true;                               \
   }
 
@@ -353,15 +353,11 @@ static void handler_ecall(State* state, RvInstr* instr) {
   state->exit_reason = kECall;
 }
 
-static void handler_fence(State* state, RvInstr* instr) {}
-
-static void handler_fencei(State* state, RvInstr* instr) {}
-
 #define __HANDLER_CSR(expr)            \
   u64 t = load_csr(state, instr->csr); \
   store_csr(state, instr->csr, expr);  \
   state->xregs[instr->rd] = t;         \
-  if (instr->csr == kSatp) {           \
+  if (instr->csr == CSR_SATP) {        \
     update_paging(state, instr->csr);  \
   }
 
@@ -754,140 +750,190 @@ static void handler_fclass_d(State* state, RvInstr* instr) {
   state->xregs[instr->rd] = __classify_d(state->fregs[instr->rs1].d);
 }
 
-static void (*rv_instr_handler[kRvInstrNum])(State*, RvInstr*) = {
-    [kLb] = handler_lb,
-    [kLh] = handler_lh,
-    [kLw] = handler_lw,
-    [kLd] = handler_ld,
-    [kLbu] = handler_lbu,
-    [kLhu] = handler_lhu,
-    [kLwu] = handler_lwu,
-    [kFence] = handler_fence,
-    [kFenceI] = handler_fencei,
-    [kAddi] = handler_addi,
-    [kSlli] = handler_slli,
-    [kSlti] = handler_slti,
-    [kSltiu] = handler_sltiu,
-    [kXori] = handler_xori,
-    [kSrli] = handler_srli,
-    [kSrai] = handler_srai,
-    [kOri] = handler_ori,
-    [kAndi] = handler_andi,
-    [kAuipc] = handler_auipc,
-    [kAddiw] = handler_addiw,
-    [kSlliw] = handler_slliw,
-    [kSrliw] = handler_srliw,
-    [kSraiw] = handler_sraiw,
-    [kSb] = handler_sb,
-    [kSh] = handler_sh,
-    [kSw] = handler_sw,
-    [kSd] = handler_sd,
-    [kAdd] = handler_add,
-    [kSub] = handler_sub,
-    [kSll] = handler_sll,
-    [kSlt] = handler_slt,
-    [kSltu] = handler_sltu,
-    [kXor] = handler_xor,
-    [kSrl] = handler_srl,
-    [kSra] = handler_sra,
-    [kOr] = handler_or,
-    [kAnd] = handler_and,
-    [kMul] = handler_mul,
-    [kMulh] = handler_mulh,
-    [kMulhsu] = handler_mulhsu,
-    [kMulhu] = handler_mulhu,
-    [kDiv] = handler_div,
-    [kDivu] = handler_divu,
-    [kRem] = handler_rem,
-    [kRemu] = handler_remu,
-    [kLui] = handler_lui,
-    [kAddw] = handler_addw,
-    [kSubw] = handler_subw,
-    [kSllw] = handler_sllw,
-    [kSrlw] = handler_srlw,
-    [kSraw] = handler_sraw,
-    [kMulw] = handler_mulw,
-    [kDivw] = handler_divw,
-    [kDivuw] = handler_divuw,
-    [kRemw] = handler_remw,
-    [kRemuw] = handler_remuw,
-    [kBeq] = handler_beq,
-    [kBne] = handler_bne,
-    [kBlt] = handler_blt,
-    [kBge] = handler_bge,
-    [kBltu] = handler_bltu,
-    [kBgeu] = handler_bgeu,
-    [kJalr] = handler_jalr,
-    [kJal] = handler_jal,
-    [kEcall] = handler_ecall,
-    [kCsrrw] = handler_csrrw,
-    [kCsrrs] = handler_csrrs,
-    [kCsrrc] = handler_csrrc,
-    [kCsrrwi] = handler_csrrwi,
-    [kCsrrsi] = handler_csrrsi,
-    [kCsrrci] = handler_csrrci,
-    [kFlw] = handler_flw,
-    [kFsw] = handler_fsw,
-    [kFmaddS] = handler_fmadd_s,
-    [kFmsubS] = handler_fmsub_s,
-    [kFnmsubS] = handler_fnmsub_s,
-    [kFnmaddS] = handler_fnmadd_s,
-    [kFaddS] = handler_fadd_s,
-    [kFsubS] = handler_fsub_s,
-    [kFmulS] = handler_fmul_s,
-    [kFdivS] = handler_fdiv_s,
-    [kFsgnjS] = handler_fsgnj_s,
-    [kFsgnjnS] = handler_fsgnjn_s,
-    [kFsgnjxS] = handler_fsgnjx_s,
-    [kFminS] = handler_fmin_s,
-    [kFmaxS] = handler_fmax_s,
-    [kFsqrtS] = handler_fsqrt_s,
-    [kFleS] = handler_fle_s,
-    [kFltS] = handler_flt_s,
-    [kFeqS] = handler_feq_s,
-    [kFcvtWS] = handler_fcvt_w_s,
-    [kFcvtWuS] = handler_fcvt_wu_s,
-    [kFcvtLS] = handler_fcvt_l_s,
-    [kFcvtLuS] = handler_fcvt_lu_s,
-    [kFcvtSW] = handler_fcvt_s_w,
-    [kFcvtSWu] = handler_fcvt_s_wu,
-    [kFcvtSL] = handler_fcvt_s_l,
-    [kFcvtSLu] = handler_fcvt_s_lu,
-    [kFmvXW] = handler_fmv_x_w,
-    [kFclassS] = handler_fclass_s,
-    [kFmvWX] = handler_fmv_w_x,
-    [kFld] = handler_fld,
-    [kFsd] = handler_fsd,
-    [kFmaddD] = handler_fmadd_d,
-    [kFmsubD] = handler_fmsub_d,
-    [kFnmsubD] = handler_fnmsub_d,
-    [kFnmaddD] = handler_fnmadd_d,
-    [kFaddD] = handler_fadd_d,
-    [kFsubD] = handler_fsub_d,
-    [kFmulD] = handler_fmul_d,
-    [kFdivD] = handler_fdiv_d,
-    [kFsgnjD] = handler_fsgnj_d,
-    [kFsgnjnD] = handler_fsgnjn_d,
-    [kFsgnjxD] = handler_fsgnjx_d,
-    [kFminD] = handler_fmin_d,
-    [kFmaxD] = handler_fmax_d,
-    [kFcvtSD] = handler_fcvt_s_d,
-    [kFcvtDS] = handler_fcvt_d_s,
-    [kFsqrtD] = handler_fsqrt_d,
-    [kFleD] = handler_fle_d,
-    [kFltD] = handler_flt_d,
-    [kFeqD] = handler_feq_d,
-    [kFcvtWD] = handler_fcvt_w_d,
-    [kFcvtWuD] = handler_fcvt_wu_d,
-    [kFcvtLD] = handler_fcvt_l_d,
-    [kFcvtLuD] = handler_fcvt_lu_d,
-    [kFcvtDW] = handler_fcvt_d_w,
-    [kFcvtDWu] = handler_fcvt_d_wu,
-    [kFcvtDL] = handler_fcvt_d_l,
-    [kFcvtDLu] = handler_fcvt_d_lu,
-    [kFmvXD] = handler_fmv_x_d,
-    [kFclassD] = handler_fclass_d,
-    [kFmvDX] = handler_fmv_d_x,
+static void handler_ni(State* state, RvInstr* instr) {}
+
+static void (*rv_instr_handler[RV_INSTR_NUM])(State*, RvInstr*) = {
+    // unprivileged: rv32i
+    [U_RV32I_LUI] = handler_lui,
+    [U_RV32I_AUIPC] = handler_auipc,
+    [U_RV32I_JAL] = handler_jal,
+    [U_RV32I_JALR] = handler_jalr,
+    [U_RV32I_BEQ] = handler_beq,
+    [U_RV32I_BNE] = handler_bne,
+    [U_RV32I_BLT] = handler_blt,
+    [U_RV32I_BGE] = handler_bge,
+    [U_RV32I_BLTU] = handler_bltu,
+    [U_RV32I_BGEU] = handler_bgeu,
+    [U_RV32I_LB] = handler_lb,
+    [U_RV32I_LH] = handler_lh,
+    [U_RV32I_LW] = handler_lw,
+    [U_RV32I_LBU] = handler_lbu,
+    [U_RV32I_LHU] = handler_lhu,
+    [U_RV32I_SB] = handler_sb,
+    [U_RV32I_SH] = handler_sh,
+    [U_RV32I_SW] = handler_sw,
+    [U_RV32I_ADDI] = handler_addi,
+    [U_RV32I_SLTI] = handler_slti,
+    [U_RV32I_SLTIU] = handler_sltiu,
+    [U_RV32I_XORI] = handler_xori,
+    [U_RV32I_ORI] = handler_ori,
+    [U_RV32I_ANDI] = handler_andi,
+    [U_RV32I_SLLI] = handler_slli,
+    [U_RV32I_SRLI] = handler_srli,
+    [U_RV32I_SRAI] = handler_srai,
+    [U_RV32I_ADD] = handler_add,
+    [U_RV32I_SUB] = handler_sub,
+    [U_RV32I_SLL] = handler_sll,
+    [U_RV32I_SLT] = handler_slt,
+    [U_RV32I_SLTU] = handler_sltu,
+    [U_RV32I_XOR] = handler_xor,
+    [U_RV32I_SRL] = handler_srl,
+    [U_RV32I_SRA] = handler_sra,
+    [U_RV32I_OR] = handler_or,
+    [U_RV32I_AND] = handler_and,
+    [U_RV32I_FENCE] = handler_ni,
+    [U_RV32I_ECALL] = handler_ecall,
+    [U_RV32I_EBREAK] = handler_ni,
+    // unprivileged: rv64i
+    [U_RV64I_LWU] = handler_lwu,
+    [U_RV64I_LD] = handler_ld,
+    [U_RV64I_SD] = handler_sd,
+    [U_RV64I_SLLI] = handler_slli,
+    [U_RV64I_SRLI] = handler_srli,
+    [U_RV64I_SRAI] = handler_srai,
+    [U_RV64I_ADDIW] = handler_addiw,
+    [U_RV64I_SLLIW] = handler_slliw,
+    [U_RV64I_SRLIW] = handler_srliw,
+    [U_RV64I_SRAIW] = handler_sraiw,
+    [U_RV64I_ADDW] = handler_addw,
+    [U_RV64I_SUBW] = handler_subw,
+    [U_RV64I_SLLW] = handler_sllw,
+    [U_RV64I_SRLW] = handler_srlw,
+    [U_RV64I_SRAW] = handler_sraw,
+    // unprivileged: zifencei
+    [U_ZIFENCEI_FENCE_I] = handler_ni,
+    // unprivileged: zicsr
+    [U_ZICSR_CSRRW] = handler_csrrw,
+    [U_ZICSR_CSRRS] = handler_csrrs,
+    [U_ZICSR_CSRRC] = handler_csrrc,
+    [U_ZICSR_CSRRWI] = handler_csrrwi,
+    [U_ZICSR_CSRRSI] = handler_csrrsi,
+    [U_ZICSR_CSRRCI] = handler_csrrci,
+    // unprivileged: rv32m
+    [U_RV32M_MUL] = handler_mul,
+    [U_RV32M_MULH] = handler_mulh,
+    [U_RV32M_MULHSU] = handler_mulhsu,
+    [U_RV32M_MULHU] = handler_mulhu,
+    [U_RV32M_DIV] = handler_div,
+    [U_RV32M_DIVU] = handler_divu,
+    [U_RV32M_REM] = handler_rem,
+    [U_RV32M_REMU] = handler_remu,
+    // unprivileged: rv64m
+    [U_RV64M_MULW] = handler_mulw,
+    [U_RV64M_DIVW] = handler_divw,
+    [U_RV64M_DIVUW] = handler_divuw,
+    [U_RV64M_REMW] = handler_remw,
+    [U_RV64M_REMUW] = handler_remuw,
+    // unprivileged: rv32a
+    [U_RV32A_LR_W] = handler_ni,
+    [U_RV32A_SC_W] = handler_ni,
+    [U_RV32A_AMOSWAP_W] = handler_ni,
+    [U_RV32A_AMOADD_W] = handler_ni,
+    [U_RV32A_AMOXOR_W] = handler_ni,
+    [U_RV32A_AMOAND_W] = handler_ni,
+    [U_RV32A_AMOOR_W] = handler_ni,
+    [U_RV32A_AMOMIN_W] = handler_ni,
+    [U_RV32A_AMOMAX_W] = handler_ni,
+    [U_RV32A_AMOMINU_W] = handler_ni,
+    [U_RV32A_AMOMAXU_W] = handler_ni,
+    // unprivileged: rv64a
+    [U_RV64A_LR_D] = handler_ni,
+    [U_RV64A_SC_D] = handler_ni,
+    [U_RV64A_AMOSWAP_D] = handler_ni,
+    [U_RV64A_AMOADD_D] = handler_ni,
+    [U_RV64A_AMOXOR_D] = handler_ni,
+    [U_RV64A_AMOAND_D] = handler_ni,
+    [U_RV64A_AMOOR_D] = handler_ni,
+    [U_RV64A_AMOMIN_D] = handler_ni,
+    [U_RV64A_AMOMAX_D] = handler_ni,
+    [U_RV64A_AMOMINU_D] = handler_ni,
+    [U_RV64A_AMOMAXU_D] = handler_ni,
+    // unprivileged: rv32f
+    [U_RV32F_FLW] = handler_flw,
+    [U_RV32F_FSW] = handler_fsw,
+    [U_RV32F_FMADD_S] = handler_fmadd_s,
+    [U_RV32F_FMSUB_S] = handler_fmsub_s,
+    [U_RV32F_FNMSUB_S] = handler_fnmsub_s,
+    [U_RV32F_FNMADD_S] = handler_fnmadd_s,
+    [U_RV32F_FADD_S] = handler_fadd_s,
+    [U_RV32F_FSUB_S] = handler_fsub_s,
+    [U_RV32F_FMUL_S] = handler_fmul_s,
+    [U_RV32F_FDIV_S] = handler_fdiv_s,
+    [U_RV32F_FSQRT_S] = handler_fsqrt_s,
+    [U_RV32F_FSGNJ_S] = handler_fsgnj_s,
+    [U_RV32F_FSGNJN_S] = handler_fsgnjn_s,
+    [U_RV32F_FSGNJX_S] = handler_fsgnjx_s,
+    [U_RV32F_FMIN_S] = handler_fmin_s,
+    [U_RV32F_FMAX_S] = handler_fmax_s,
+    [U_RV32F_FCVT_W_S] = handler_fcvt_w_s,
+    [U_RV32F_FCVT_WU_S] = handler_fcvt_wu_s,
+    [U_RV32F_FMV_X_W] = handler_fmv_x_w,
+    [U_RV32F_FEQ_S] = handler_feq_s,
+    [U_RV32F_FLT_S] = handler_flt_s,
+    [U_RV32F_FLE_S] = handler_fle_s,
+    [U_RV32F_FCLASS_S] = handler_fclass_s,
+    [U_RV32F_FCVT_S_W] = handler_fcvt_s_w,
+    [U_RV32F_FCVT_S_WU] = handler_fcvt_s_wu,
+    [U_RV32F_FMV_W_X] = handler_fmv_w_x,
+    // unprivileged: rv64f
+    [U_RV64F_FCVT_L_S] = handler_fcvt_l_s,
+    [U_RV64F_FCVT_LU_S] = handler_fcvt_lu_s,
+    [U_RV64F_FCVT_S_L] = handler_fcvt_s_l,
+    [U_RV64F_FCVT_S_LU] = handler_fcvt_s_lu,
+    // unprivileged: rv32d
+    [U_RV32D_FLD] = handler_fld,
+    [U_RV32D_FSD] = handler_fsd,
+    [U_RV32D_FMADD_D] = handler_fmadd_d,
+    [U_RV32D_FMSUB_D] = handler_fmsub_d,
+    [U_RV32D_FNMSUB_D] = handler_fnmsub_d,
+    [U_RV32D_FNMADD_D] = handler_fnmadd_d,
+    [U_RV32D_FADD_D] = handler_fadd_d,
+    [U_RV32D_FSUB_D] = handler_fsub_d,
+    [U_RV32D_FMUL_D] = handler_fmul_d,
+    [U_RV32D_FDIV_D] = handler_fdiv_d,
+    [U_RV32D_FSQRT_D] = handler_fsqrt_d,
+    [U_RV32D_FSGNJ_D] = handler_fsgnj_d,
+    [U_RV32D_FSGNJN_D] = handler_fsgnjn_d,
+    [U_RV32D_FSGNJX_D] = handler_fsgnjx_d,
+    [U_RV32D_FMIN_D] = handler_fmin_d,
+    [U_RV32D_FMAX_D] = handler_fmax_d,
+    [U_RV32D_FCVT_S_D] = handler_fcvt_s_d,
+    [U_RV32D_FCVT_D_S] = handler_fcvt_d_s,
+    [U_RV32D_FEQ_D] = handler_feq_d,
+    [U_RV32D_FLT_D] = handler_flt_d,
+    [U_RV32D_FLE_D] = handler_fle_d,
+    [U_RV32D_FCLASS_D] = handler_fclass_d,
+    [U_RV32D_FCVT_W_D] = handler_fcvt_w_d,
+    [U_RV32D_FCVT_WU_D] = handler_fcvt_wu_d,
+    [U_RV32D_FCVT_D_W] = handler_fcvt_d_w,
+    [U_RV32D_FCVT_D_WU] = handler_fcvt_d_wu,
+    // unprivileged: rv64d
+    [U_RV64D_FCVT_L_D] = handler_fcvt_l_d,
+    [U_RV64D_FCVT_LU_D] = handler_fcvt_lu_d,
+    [U_RV64D_FMV_X_D] = handler_fmv_x_d,
+    [U_RV64D_FCVT_D_L] = handler_fcvt_d_l,
+    [U_RV64D_FCVT_D_LU] = handler_fcvt_d_lu,
+    [U_RV64D_FMV_D_X] = handler_fmv_d_x,
+    // privileged: trap-return
+    [P_SRET] = handler_ni,
+    [P_MRET] = handler_ni,
+    // privileged: interrupt-management
+    [P_WFI] = handler_ni,
+    // privileged: supervisor memory-management
+    [P_SFENCE_VMA] = handler_ni,
+    [P_SINVAL_VMA] = handler_ni,
+    [P_SFENCE_W_INVAL] = handler_ni,
+    [P_SFENCE_INVAL_IR] = handler_ni,
 };
 
 void exec_block_interp(State* state) {
@@ -897,7 +943,7 @@ void exec_block_interp(State* state) {
     rv_instr_decode(&instr, instr_raw);
     rv_instr_handler[instr.type](state, &instr);
 
-    state->xregs[kZero] = 0;
+    state->xregs[X_REG_ZERO] = 0;
 
     if (instr.cont) break;
 

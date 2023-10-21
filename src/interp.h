@@ -14,7 +14,6 @@ typedef enum {
   kDirectBranch,
   kIndirectBranch,
   kECall,
-  kExitReasonNum,
 } ExitReason;
 
 typedef enum {
@@ -25,9 +24,9 @@ typedef enum {
 } Mode;
 
 typedef struct {
-  u64 xregs[kXRegNum];
-  FReg fregs[kFRegNum];
-  u64 csrs[kCsrNum];
+  u64 xregs[X_REG_NUM];
+  FReg fregs[F_REG_NUM];
+  u64 csrs[CSR_NUM];
   u64 pc;
   u64 re_enter_pc;
   Mode mode;

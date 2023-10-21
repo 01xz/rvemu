@@ -36,48 +36,48 @@ static inline int convert_flags(int flags) {
 }
 
 static u64 handler_exit(Machine* m) {
-  u64 ec = machine_get_xreg(m, kA0);
+  u64 ec = machine_get_xreg(m, X_REG_A0);
   exit(ec);  // #include <stdlib.h>
 }
 
 static u64 handler_read(Machine* m) {
-  u64 fd = machine_get_xreg(m, kA0);
-  u64 buf = machine_get_xreg(m, kA1);
-  u64 nbytes = machine_get_xreg(m, kA2);
+  u64 fd = machine_get_xreg(m, X_REG_A0);
+  u64 buf = machine_get_xreg(m, X_REG_A1);
+  u64 nbytes = machine_get_xreg(m, X_REG_A2);
   return read(fd, (void*)TO_HOST(buf), (size_t)nbytes);  // #include <unistd.h>
 }
 
 static u64 handler_write(Machine* m) {
-  u64 fd = machine_get_xreg(m, kA0);
-  u64 buf = machine_get_xreg(m, kA1);
-  u64 n = machine_get_xreg(m, kA2);
+  u64 fd = machine_get_xreg(m, X_REG_A0);
+  u64 buf = machine_get_xreg(m, X_REG_A1);
+  u64 n = machine_get_xreg(m, X_REG_A2);
   return write(fd, (void*)TO_HOST(buf), (size_t)n);  // #include <unistd.h>
 }
 
 static u64 handler_openat(Machine* m) {
-  u64 fd = machine_get_xreg(m, kA0);
-  u64 file = machine_get_xreg(m, kA1);
-  u64 oflag = machine_get_xreg(m, kA2);
-  u64 mode = machine_get_xreg(m, kA3);
+  u64 fd = machine_get_xreg(m, X_REG_A0);
+  u64 file = machine_get_xreg(m, X_REG_A1);
+  u64 oflag = machine_get_xreg(m, X_REG_A2);
+  u64 mode = machine_get_xreg(m, X_REG_A3);
   return openat(fd, (char*)TO_HOST(file), convert_flags(oflag),
                 (mode_t)mode);  // #include <fcntl.h>
 }
 
 static u64 handler_close(Machine* m) {
-  u64 fd = machine_get_xreg(m, kA0);
+  u64 fd = machine_get_xreg(m, X_REG_A0);
   if (fd > 2) return close(fd);  // #include <unistd.h>
   return 0;
 }
 
 static u64 handler_lseek(Machine* m) {
-  u64 fd = machine_get_xreg(m, kA0);
-  u64 offset = machine_get_xreg(m, kA1);
-  u64 whence = machine_get_xreg(m, kA2);
+  u64 fd = machine_get_xreg(m, X_REG_A0);
+  u64 offset = machine_get_xreg(m, X_REG_A1);
+  u64 whence = machine_get_xreg(m, X_REG_A2);
   return lseek(fd, (off_t)offset, whence);  // #include <unistd.h>
 }
 
 static u64 handler_brk(Machine* m) {
-  u64 addr = machine_get_xreg(m, kA0);
+  u64 addr = machine_get_xreg(m, X_REG_A0);
   if (addr == 0) {
     addr = m->mmu.alloc;
   }
@@ -88,14 +88,14 @@ static u64 handler_brk(Machine* m) {
 }
 
 static u64 handler_fstat(Machine* m) {
-  u64 fd = machine_get_xreg(m, kA0);
-  u64 addr = machine_get_xreg(m, kA1);
+  u64 fd = machine_get_xreg(m, X_REG_A0);
+  u64 addr = machine_get_xreg(m, X_REG_A1);
   return fstat(fd, (struct stat*)TO_HOST(addr));  // #include <sys/stat.h>
 }
 
 static u64 handler_gettimeofday(Machine* m) {
-  u64 tv_addr = machine_get_xreg(m, kA0);
-  u64 tz_addr = machine_get_xreg(m, kA1);
+  u64 tv_addr = machine_get_xreg(m, X_REG_A0);
+  u64 tz_addr = machine_get_xreg(m, X_REG_A1);
   struct timeval* tv = (struct timeval*)TO_HOST(tv_addr);
   struct timezone* tz =
       (tz_addr != 0) ? (struct timezone*)TO_HOST(tz_addr) : NULL;
@@ -103,70 +103,71 @@ static u64 handler_gettimeofday(Machine* m) {
 }
 
 static u64 handler_ni_syscall(Machine* m) {
-  FATALF(", ni syscall: %lu, pc: %lx", machine_get_xreg(m, kA7), m->state.pc);
+  FATALF(", ni syscall: %lu, pc: %lx", machine_get_xreg(m, X_REG_A7),
+         m->state.pc);
 }
 
 static u64 (*rv_syscall_handler[])(Machine*) = {
-    [kSysExit] = handler_exit,
-    [kSysExitGroup] = handler_exit,
-    [kSysGetpid] = handler_ni_syscall,
-    [kSysKill] = handler_ni_syscall,
-    [kSysTgkill] = handler_ni_syscall,
-    [kSysRead] = handler_read,
-    [kSysWrite] = handler_write,
-    [kSysOpenat] = handler_openat,
-    [kSysClose] = handler_close,
-    [kSysLseek] = handler_lseek,
-    [kSysBrk] = handler_brk,
-    [kSysLinkat] = handler_ni_syscall,
-    [kSysUnlinkat] = handler_ni_syscall,
-    [kSysMkdirat] = handler_ni_syscall,
-    [kSysRenameat] = handler_ni_syscall,
-    [kSysChdir] = handler_ni_syscall,
-    [kSysGetcwd] = handler_ni_syscall,
-    [kSysFstat] = handler_fstat,
-    [kSysFstatat] = handler_ni_syscall,
-    [kSysFaccessat] = handler_ni_syscall,
-    [kSysPread] = handler_ni_syscall,
-    [kSysPwrite] = handler_ni_syscall,
-    [kSysUname] = handler_ni_syscall,
-    [kSysGetuid] = handler_ni_syscall,
-    [kSysGeteuid] = handler_ni_syscall,
-    [kSysGetgid] = handler_ni_syscall,
-    [kSysGetegid] = handler_ni_syscall,
-    [kSysGettid] = handler_ni_syscall,
-    [kSysSysinfo] = handler_ni_syscall,
-    [kSysMmap] = handler_ni_syscall,
-    [kSysMunmap] = handler_ni_syscall,
-    [kSysMremap] = handler_ni_syscall,
-    [kSysMprotect] = handler_ni_syscall,
-    [kSysPrlimit64] = handler_ni_syscall,
-    [kSysRtSigaction] = handler_ni_syscall,
-    [kSysWritev] = handler_ni_syscall,
-    [kSysGettimeofday] = handler_gettimeofday,
-    [kSysTimes] = handler_ni_syscall,
-    [kSysFcntl] = handler_ni_syscall,
-    [kSysFtruncate] = handler_ni_syscall,
-    [kSysGetdents] = handler_ni_syscall,
-    [kSysDup] = handler_ni_syscall,
-    [kSysDup3] = handler_ni_syscall,
-    [kSysReadlinkat] = handler_ni_syscall,
-    [kSysRtSigprocmask] = handler_ni_syscall,
-    [kSysIoctl] = handler_ni_syscall,
-    [kSysGetrlimit] = handler_ni_syscall,
-    [kSysSetrlimit] = handler_ni_syscall,
-    [kSysGetrusage] = handler_ni_syscall,
-    [kSysClockGettime] = handler_ni_syscall,
-    [kSysSetTidAddress] = handler_ni_syscall,
-    [kSysSetRobustList] = handler_ni_syscall,
-    [kSysMadvise] = handler_ni_syscall,
-    [kSysStatx] = handler_ni_syscall,
+    [SYS_EXIT] = handler_exit,
+    [SYS_EXIT_GROUP] = handler_exit,
+    [SYS_GETPID] = handler_ni_syscall,
+    [SYS_KILL] = handler_ni_syscall,
+    [SYS_TGKILL] = handler_ni_syscall,
+    [SYS_READ] = handler_read,
+    [SYS_WRITE] = handler_write,
+    [SYS_OPENAT] = handler_openat,
+    [SYS_CLOSE] = handler_close,
+    [SYS_LSEEK] = handler_lseek,
+    [SYS_BRK] = handler_brk,
+    [SYS_LINKAT] = handler_ni_syscall,
+    [SYS_UNLINKAT] = handler_ni_syscall,
+    [SYS_MKDIRAT] = handler_ni_syscall,
+    [SYS_RENAMEAT] = handler_ni_syscall,
+    [SYS_CHDIR] = handler_ni_syscall,
+    [SYS_GETCWD] = handler_ni_syscall,
+    [SYS_FSTAT] = handler_fstat,
+    [SYS_FSTATAT] = handler_ni_syscall,
+    [SYS_FACCESSAT] = handler_ni_syscall,
+    [SYS_PREAD] = handler_ni_syscall,
+    [SYS_PWRITE] = handler_ni_syscall,
+    [SYS_UNAME] = handler_ni_syscall,
+    [SYS_GETUID] = handler_ni_syscall,
+    [SYS_GETEUID] = handler_ni_syscall,
+    [SYS_GETGID] = handler_ni_syscall,
+    [SYS_GETEGID] = handler_ni_syscall,
+    [SYS_GETTID] = handler_ni_syscall,
+    [SYS_SYSINFO] = handler_ni_syscall,
+    [SYS_MMAP] = handler_ni_syscall,
+    [SYS_MUNMAP] = handler_ni_syscall,
+    [SYS_MREMAP] = handler_ni_syscall,
+    [SYS_MPROTECT] = handler_ni_syscall,
+    [SYS_PRLIMIT64] = handler_ni_syscall,
+    [SYS_RT_SIGACTION] = handler_ni_syscall,
+    [SYS_WRITEV] = handler_ni_syscall,
+    [SYS_GETTIMEOFDAY] = handler_gettimeofday,
+    [SYS_TIMES] = handler_ni_syscall,
+    [SYS_FCNTL] = handler_ni_syscall,
+    [SYS_FTRUNCATE] = handler_ni_syscall,
+    [SYS_GETDENTS] = handler_ni_syscall,
+    [SYS_DUP] = handler_ni_syscall,
+    [SYS_DUP3] = handler_ni_syscall,
+    [SYS_READLINKAT] = handler_ni_syscall,
+    [SYS_RT_SIGPROCMASK] = handler_ni_syscall,
+    [SYS_IOCTL] = handler_ni_syscall,
+    [SYS_GETRLIMIT] = handler_ni_syscall,
+    [SYS_SETRLIMIT] = handler_ni_syscall,
+    [SYS_GETRUSAGE] = handler_ni_syscall,
+    [SYS_CLOCK_GETTIME] = handler_ni_syscall,
+    [SYS_SET_TID_ADDRESS] = handler_ni_syscall,
+    [SYS_SET_ROBUST_LIST] = handler_ni_syscall,
+    [SYS_MADVISE] = handler_ni_syscall,
+    [SYS_STATX] = handler_ni_syscall,
 };
 
 static u64 handler_sysopen(Machine* m) {
-  u64 file = machine_get_xreg(m, kA0);
-  u64 oflag = machine_get_xreg(m, kA1);
-  u64 mode = machine_get_xreg(m, kA2);
+  u64 file = machine_get_xreg(m, X_REG_A0);
+  u64 oflag = machine_get_xreg(m, X_REG_A1);
+  u64 mode = machine_get_xreg(m, X_REG_A2);
   return open((char*)TO_HOST(file), convert_flags(oflag),
               (mode_t)mode);  // #include <fcntl.h>
 }
@@ -174,14 +175,14 @@ static u64 handler_sysopen(Machine* m) {
 #define OLD_SYSCALL_THRESHOLD 1024
 
 static u64 (*rv_old_syscall_handler[])(Machine*) = {
-    [kSysOpen - OLD_SYSCALL_THRESHOLD] = handler_sysopen,
-    [kSysLink - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
-    [kSysUnlink - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
-    [kSysMkdir - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
-    [kSysAccess - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
-    [kSysStat - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
-    [kSysLstat - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
-    [kSysTime - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
+    [SYS_OPEN - OLD_SYSCALL_THRESHOLD] = handler_sysopen,
+    [SYS_LINK - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
+    [SYS_UNLINK - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
+    [SYS_MKDIR - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
+    [SYS_ACCESS - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
+    [SYS_STAT - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
+    [SYS_LSTAT - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
+    [SYS_TIME - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
 };
 
 #define RVEMU_SYSCALL_ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
@@ -194,12 +195,12 @@ u64 do_syscall(Machine* m, u64 syscall) {
   } else if (syscall - OLD_SYSCALL_THRESHOLD <
              RVEMU_SYSCALL_ARRAY_SIZE(rv_old_syscall_handler)) {
     handler = rv_old_syscall_handler[syscall - OLD_SYSCALL_THRESHOLD];
-  } else if (syscall == kSysGetmainvars) {
+  } else if (syscall == SYS_GETMAINVARS) {
     handler = handler_ni_syscall;
   }
 
   if (!handler) {
-    FATAL("unknown syscall");
+    FATALF("unknown syscall: %lu", syscall);
   }
 
   return handler(m);

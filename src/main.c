@@ -17,9 +17,9 @@ int main(int argc, char* argv[]) {
     ExitReason reason = machine_step(&m);
     assert(reason == kECall);
 
-    u64 syscall = machine_get_xreg(&m, kA7);
+    u64 syscall = machine_get_xreg(&m, X_REG_A7);
     u64 ret = do_syscall(&m, syscall);
-    machine_set_xreg(&m, kA0, ret);
+    machine_set_xreg(&m, X_REG_A0, ret);
   }
 
   return 0;

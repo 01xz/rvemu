@@ -477,38 +477,38 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
       switch (un.gtype.instr15_13) {
         case 0x0:  // CIW-format: C.ADDI4SPN
           *instr = decode_ciw_type(&un);
-          instr->type = kAddi;
-          instr->rs1 = kSp;
+          instr->type = U_RV32I_ADDI;
+          instr->rs1 = X_REG_SP;
           assert(instr->imm != 0);
           return;
         case 0x1:  // CL-format: C.FLD
           *instr = decode_cl_type(&un);
-          instr->type = kFld;
+          instr->type = U_RV32D_FLD;
           instr->imm = __get_cl_type_imm_scaled_8(&un);
           return;
         case 0x2:  // CL-format: C.LW
           *instr = decode_cl_type(&un);
-          instr->type = kLw;
+          instr->type = U_RV32I_LW;
           instr->imm = __get_cl_type_imm_scaled_4(&un);
           return;
         case 0x3:  // CL-format: C.LD
           *instr = decode_cl_type(&un);
-          instr->type = kLd;
+          instr->type = U_RV64I_LD;
           instr->imm = __get_cl_type_imm_scaled_8(&un);
           return;
         case 0x5:  // CS-format: C.FSD
           *instr = decode_cs_type(&un);
-          instr->type = kFsd;
+          instr->type = U_RV32D_FSD;
           instr->imm = __get_cs_type_imm_scaled_8(&un);
           return;
         case 0x6:  // CS-format: C.SW
           *instr = decode_cs_type(&un);
-          instr->type = kSw;
+          instr->type = U_RV32I_SW;
           instr->imm = __get_cs_type_imm_scaled_4(&un);
           return;
         case 0x7:  // CS-format: C.SD
           *instr = decode_cs_type(&un);
-          instr->type = kSd;
+          instr->type = U_RV64I_SD;
           instr->imm = __get_cs_type_imm_scaled_8(&un);
           return;
         default:
@@ -521,30 +521,30 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
       switch (un.gtype.instr15_13) {
         case 0x0:  // CI-format: C.ADDI
           *instr = decode_ci_type(&un);
-          instr->type = kAddi;
+          instr->type = U_RV32I_ADDI;
           instr->rs1 = instr->rd;
           instr->imm = __get_ci_type_imm_sign_extended(&un);
           return;
         case 0x1:  // CI-format: C.ADDIW
           *instr = decode_ci_type(&un);
-          instr->type = kAddiw;
+          instr->type = U_RV64I_ADDIW;
           instr->rs1 = instr->rd;
           instr->imm = __get_ci_type_imm_sign_extended(&un);
           return;
         case 0x2:  // CI-format: C.LI
           *instr = decode_ci_type(&un);
-          instr->type = kAddi;
-          instr->rs1 = kZero;
+          instr->type = U_RV32I_ADDI;
+          instr->rs1 = X_REG_ZERO;
           instr->imm = __get_ci_type_imm_sign_extended(&un);
           return;
         case 0x3: {  // CI-format
           *instr = decode_ci_type(&un);
           if (instr->rd == 2) {  // C.ADDI16SP
-            instr->type = kAddi;
+            instr->type = U_RV32I_ADDI;
             instr->rs1 = instr->rd;
             instr->imm = __get_ci_type_imm_addi16sp(&un);
           } else {  // C.LUI
-            instr->type = kLui;
+            instr->type = U_RV32I_LUI;
             instr->imm = __get_ci_type_imm_lui(&un);
           }
           return;
@@ -556,11 +556,11 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
             instr->imm = __get_cb_type_imm_ic(&un);
             instr->rd = instr->rs1;
             if (funct2 == 0x0) {  // C.SRLI
-              instr->type = kSrli;
+              instr->type = U_RV64I_SRLI;
             } else if (funct2 == 0x1) {  // C.SRAI
-              instr->type = kSrai;
+              instr->type = U_RV64I_SRAI;
             } else {  // C.ANDI
-              instr->type = kAndi;
+              instr->type = U_RV32I_ANDI;
             }
             return;
           } else {  // CA-format
@@ -569,20 +569,20 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
             u32 funct2_low = (instr_raw >> 5) & 0x3;
             if (funct1 == 0x0) {
               if (funct2_low == 0x0) {  // C.SUB
-                instr->type = kSub;
+                instr->type = U_RV32I_SUB;
               } else if (funct2_low == 0x1) {  // C.XOR
-                instr->type = kXor;
+                instr->type = U_RV32I_XOR;
               } else if (funct2_low == 0x2) {  // C.OR
-                instr->type = kOr;
+                instr->type = U_RV32I_OR;
               } else {  // C.AND
-                instr->type = kAnd;
+                instr->type = U_RV32I_AND;
               }
               return;
             } else {
               if ((funct2_low & 0x1) == 0x0) {  // C.SUBW
-                instr->type = kSubw;
+                instr->type = U_RV64I_SUBW;
               } else {  // C.ADDW
-                instr->type = kAddw;
+                instr->type = U_RV64I_ADDW;
               }
               return;
             }
@@ -590,21 +590,21 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
         }
         case 0x5:  // CJ-format: C.J
           *instr = decode_cj_type(&un);
-          instr->type = kJal;
-          instr->rs1 = kZero;
+          instr->type = U_RV32I_JAL;
+          instr->rs1 = X_REG_ZERO;
           instr->cont = true;
           return;
         case 0x6:  // CB-format: C.BEQZ
           *instr = decode_cb_type(&un);
-          instr->type = kBeq;
+          instr->type = U_RV32I_BEQ;
           instr->imm = __get_cb_type_imm(&un);
-          instr->rs2 = kZero;
+          instr->rs2 = X_REG_ZERO;
           return;
         case 0x7:  // CB-format: C.BNEZ
           *instr = decode_cb_type(&un);
-          instr->type = kBne;
+          instr->type = U_RV32I_BNE;
           instr->imm = __get_cb_type_imm(&un);
-          instr->rs2 = kZero;
+          instr->rs2 = X_REG_ZERO;
           return;
         default:
           __builtin_unreachable();
@@ -616,50 +616,50 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
       switch (un.gtype.instr15_13) {
         case 0x0:  // CI-format: C.SLLI
           *instr = decode_ci_type(&un);
-          instr->type = kSlli;
+          instr->type = U_RV64I_SLLI;
           instr->imm = __get_ci_type_imm_slli(&un);
           instr->rs1 = instr->rd;
           return;
         case 0x1:  // CI-format: C.FLDSP
           *instr = decode_ci_type(&un);
-          instr->type = kFld;
+          instr->type = U_RV32D_FLD;
           instr->imm = __get_ci_type_imm_scaled_8(&un);
-          instr->rs1 = kSp;
+          instr->rs1 = X_REG_SP;
           return;
         case 0x2:  // CI-format: C.LWSP
           *instr = decode_ci_type(&un);
-          instr->type = kLw;
+          instr->type = U_RV32I_LW;
           instr->imm = __get_ci_type_imm_scaled_4(&un);
-          instr->rs1 = kSp;
+          instr->rs1 = X_REG_SP;
           return;
         case 0x3:  // CI-format: C.LDSP
           *instr = decode_ci_type(&un);
-          instr->type = kLd;
+          instr->type = U_RV64I_LD;
           instr->imm = __get_ci_type_imm_scaled_8(&un);
-          instr->rs1 = kSp;
+          instr->rs1 = X_REG_SP;
           return;
         case 0x4: {  // CR-format
           *instr = decode_cr_type(&un);
           if (un.crtype.funct4 == 0x8) {
             if (instr->rs2 == 0) {  // C.JR
-              instr->type = kJalr;
-              instr->rd = kZero;
+              instr->type = U_RV32I_JALR;
+              instr->rd = X_REG_ZERO;
               instr->cont = true;
             } else {  // C.MV
-              instr->type = kAdd;
+              instr->type = U_RV32I_ADD;
               instr->rd = instr->rs1;
-              instr->rs1 = kZero;
+              instr->rs1 = X_REG_ZERO;
             }
             return;
           } else {
             if (instr->rs1 == 0) {  // C.EBREAK
-              FATAL("C.EBREAK");
+              instr->type = U_RV32I_EBREAK;
             } else if (instr->rs2 == 0) {  // C.JALR
-              instr->type = kJalr;
-              instr->rd = kRa;
+              instr->type = U_RV32I_JALR;
+              instr->rd = X_REG_RA;
               instr->cont = true;
             } else {  // C.ADD
-              instr->type = kAdd;
+              instr->type = U_RV32I_ADD;
               instr->rd = instr->rs1;
             }
             return;
@@ -667,21 +667,21 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
         }
         case 0x5:  // CSS-format: C.FSDSP
           *instr = decode_css_type(&un);
-          instr->type = kFsd;
+          instr->type = U_RV32D_FSD;
           instr->imm = __get_css_type_imm_scaled_8(&un);
-          instr->rs1 = kSp;
+          instr->rs1 = X_REG_SP;
           return;
         case 0x6:  // CSS-format: C.SWSP
           *instr = decode_css_type(&un);
-          instr->type = kSw;
+          instr->type = U_RV32I_SW;
           instr->imm = __get_css_type_imm_scaled_4(&un);
-          instr->rs1 = kSp;
+          instr->rs1 = X_REG_SP;
           return;
         case 0x7:  // CSS-format: C.SDSP
           *instr = decode_css_type(&un);
-          instr->type = kSd;
+          instr->type = U_RV64I_SD;
           instr->imm = __get_css_type_imm_scaled_8(&un);
-          instr->rs1 = kSp;
+          instr->rs1 = X_REG_SP;
           return;
         default:
           __builtin_unreachable();
@@ -695,25 +695,25 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
           *instr = decode_i_type(&un);
           switch (un.itype.funct3) {
             case 0x0:  // LB
-              instr->type = kLb;
+              instr->type = U_RV32I_LB;
               return;
             case 0x1:  // LH
-              instr->type = kLh;
+              instr->type = U_RV32I_LH;
               return;
             case 0x2:  // LW
-              instr->type = kLw;
+              instr->type = U_RV32I_LW;
               return;
             case 0x3:  // LD
-              instr->type = kLd;
+              instr->type = U_RV64I_LD;
               return;
             case 0x4:  // LBU
-              instr->type = kLbu;
+              instr->type = U_RV32I_LBU;
               return;
             case 0x5:  // LHU
-              instr->type = kLhu;
+              instr->type = U_RV32I_LHU;
               return;
             case 0x6:  // LWU
-              instr->type = kLwu;
+              instr->type = U_RV64I_LWU;
               return;
             default:
               __builtin_unreachable();
@@ -725,10 +725,10 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
           *instr = decode_i_type(&un);
           switch (un.itype.funct3) {
             case 0x2:  // FLW
-              instr->type = kFlw;
+              instr->type = U_RV32F_FLW;
               return;
             case 0x3:  // FLD
-              instr->type = kFld;
+              instr->type = U_RV32D_FLD;
               return;
             default:
               __builtin_unreachable();
@@ -740,10 +740,10 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
           *instr = decode_i_type(&un);
           switch (un.itype.funct3) {
             case 0x0:  // FENCE
-              instr->type = kFence;
+              instr->type = U_RV32I_FENCE;
               return;
             case 0x1:  // FENCE.I
-              instr->type = kFenceI;
+              instr->type = U_ZIFENCEI_FENCE_I;
               return;
             default:
               __builtin_unreachable();
@@ -755,38 +755,38 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
           *instr = decode_i_type(&un);
           switch (un.itype.funct3) {
             case 0x0:  // ADDI
-              instr->type = kAddi;
+              instr->type = U_RV32I_ADDI;
               return;
             case 0x1:
               if ((un.gtype.instr31_25 >> 1) == 0x0) {  // SLLI
-                instr->type = kSlli;
+                instr->type = U_RV64I_SLLI;
               } else {
                 __builtin_unreachable();
               }
               return;
             case 0x2:  // SLTI
-              instr->type = kSlti;
+              instr->type = U_RV32I_SLTI;
               return;
             case 0x3:  // SLTIU
-              instr->type = kSltiu;
+              instr->type = U_RV32I_SLTIU;
               return;
             case 0x4:  // XORI
-              instr->type = kXori;
+              instr->type = U_RV32I_XORI;
               return;
             case 0x5:
               if ((un.gtype.instr31_25 >> 1) == 0x0) {  // SRLI
-                instr->type = kSrli;
+                instr->type = U_RV64I_SRLI;
               } else if ((un.gtype.instr31_25 >> 1) == 0x10) {  // SRAI
-                instr->type = kSrai;
+                instr->type = U_RV64I_SRAI;
               } else {
                 __builtin_unreachable();
               }
               return;
             case 0x6:  // ORI
-              instr->type = kOri;
+              instr->type = U_RV32I_ORI;
               return;
             case 0x7:  // ANDI
-              instr->type = kAndi;
+              instr->type = U_RV32I_ANDI;
               return;
             default:
               __builtin_unreachable();
@@ -796,7 +796,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
 
         case 0x5: {  // U-type: AUIPC
           *instr = decode_u_type(&un);
-          instr->type = kAuipc;
+          instr->type = U_RV32I_AUIPC;
           return;
         }  // opcode case 0x5
 
@@ -804,17 +804,17 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
           *instr = decode_i_type(&un);
           switch (un.itype.funct3) {
             case 0x0:  // ADDIW
-              instr->type = kAddiw;
+              instr->type = U_RV64I_ADDIW;
               return;
             case 0x1:  // SLLIW
               assert(un.gtype.instr31_25 == 0x0);
-              instr->type = kSlliw;
+              instr->type = U_RV64I_SLLIW;
               return;
             case 0x5:
               if (un.gtype.instr31_25 == 0x0) {  // SRLIW
-                instr->type = kSrliw;
+                instr->type = U_RV64I_SRLIW;
               } else if (un.gtype.instr31_25 == 0x20) {  // SRAIW
-                instr->type = kSraiw;
+                instr->type = U_RV64I_SRAIW;
               } else {
                 __builtin_unreachable();
               }
@@ -829,16 +829,16 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
           *instr = decode_s_type(&un);
           switch (un.stype.funct3) {
             case 0x0:  // SB
-              instr->type = kSb;
+              instr->type = U_RV32I_SB;
               return;
             case 0x1:  // SH
-              instr->type = kSh;
+              instr->type = U_RV32I_SH;
               return;
             case 0x2:  // SW
-              instr->type = kSw;
+              instr->type = U_RV32I_SW;
               return;
             case 0x3:  // SD
-              instr->type = kSd;
+              instr->type = U_RV64I_SD;
               return;
             default:
               __builtin_unreachable();
@@ -850,10 +850,10 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
           *instr = decode_s_type(&un);
           switch (un.stype.funct3) {
             case 0x2:  // FSW
-              instr->type = kFsw;
+              instr->type = U_RV32F_FSW;
               return;
             case 0x3:  // FSD
-              instr->type = kFsd;
+              instr->type = U_RV32D_FSD;
               return;
             default:
               __builtin_unreachable();
@@ -866,76 +866,76 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
           switch (un.rtype.funct3) {
             case 0x0:
               if (un.rtype.funct7 == 0x0) {  // ADD
-                instr->type = kAdd;
+                instr->type = U_RV32I_ADD;
               } else if (un.rtype.funct7 == 0x1) {  // MUL
-                instr->type = kMul;
+                instr->type = U_RV32M_MUL;
               } else if (un.rtype.funct7 == 0x20) {  // SUB
-                instr->type = kSub;
+                instr->type = U_RV32I_SUB;
               } else {
                 __builtin_unreachable();
               }
               return;
             case 0x1:
               if (un.rtype.funct7 == 0x0) {  // SLL
-                instr->type = kSll;
+                instr->type = U_RV32I_SLL;
               } else if (un.rtype.funct7 == 0x1) {  // MULH
-                instr->type = kMulh;
+                instr->type = U_RV32M_MULH;
               } else {
                 __builtin_unreachable();
               }
               return;
             case 0x2:
               if (un.rtype.funct7 == 0x0) {  // SLT
-                instr->type = kSlt;
+                instr->type = U_RV32I_SLT;
               } else if (un.rtype.funct7 == 0x1) {  // MULHSU
-                instr->type = kMulhsu;
+                instr->type = U_RV32M_MULHSU;
               } else {
                 __builtin_unreachable();
               }
               return;
             case 0x3:
               if (un.rtype.funct7 == 0x0) {  // SLTU
-                instr->type = kSltu;
+                instr->type = U_RV32I_SLTU;
               } else if (un.rtype.funct7 == 0x1) {  // MULHU
-                instr->type = kMulhu;
+                instr->type = U_RV32M_MULHU;
               } else {
                 __builtin_unreachable();
               }
               return;
             case 0x4:
               if (un.rtype.funct7 == 0x0) {  // XOR
-                instr->type = kXor;
+                instr->type = U_RV32I_XOR;
               } else if (un.rtype.funct7 == 0x1) {  // DIV
-                instr->type = kDiv;
+                instr->type = U_RV32M_DIV;
               } else {
                 __builtin_unreachable();
               }
               return;
             case 0x5:
               if (un.rtype.funct7 == 0x0) {  // SRL
-                instr->type = kSrl;
+                instr->type = U_RV32I_SRL;
               } else if (un.rtype.funct7 == 0x1) {  // DIVU
-                instr->type = kDivu;
+                instr->type = U_RV32M_DIVU;
               } else if (un.rtype.funct7 == 0x20) {  // SRA
-                instr->type = kSra;
+                instr->type = U_RV32I_SRA;
               } else {
                 __builtin_unreachable();
               }
               return;
             case 0x6:
               if (un.rtype.funct7 == 0x0) {  // OR
-                instr->type = kOr;
+                instr->type = U_RV32I_OR;
               } else if (un.rtype.funct7 == 0x1) {  // REM
-                instr->type = kRem;
+                instr->type = U_RV32M_REM;
               } else {
                 __builtin_unreachable();
               }
               return;
             case 0x7:
               if (un.rtype.funct7 == 0x0) {  // AND
-                instr->type = kAnd;
+                instr->type = U_RV32I_AND;
               } else if (un.rtype.funct7 == 0x1) {  // REMU
-                instr->type = kRemu;
+                instr->type = U_RV32M_REMU;
               } else {
                 __builtin_unreachable();
               }
@@ -948,7 +948,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
 
         case 0xd: {  // U-type: LUI
           *instr = decode_u_type(&un);
-          instr->type = kLui;
+          instr->type = U_RV32I_LUI;
           return;
         }  // case 0xd
 
@@ -957,50 +957,50 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
           switch (un.rtype.funct3) {
             case 0x0:
               if (un.rtype.funct7 == 0x0) {  // ADDW
-                instr->type = kAddw;
+                instr->type = U_RV64I_ADDW;
               } else if (un.rtype.funct7 == 0x1) {  // MULW
-                instr->type = kMulw;
+                instr->type = U_RV64M_MULW;
               } else if (un.rtype.funct7 == 0x20) {  // SUBW
-                instr->type = kSubw;
+                instr->type = U_RV64I_SUBW;
               } else {
                 __builtin_unreachable();
               }
               return;
             case 0x1:
               if (un.rtype.funct7 == 0x0) {  // SLLW
-                instr->type = kSllw;
+                instr->type = U_RV64I_SLLW;
               } else {
                 __builtin_unreachable();
               }
               return;
             case 0x4:
               if (un.rtype.funct7 == 0x1) {  // DIVW
-                instr->type = kDivw;
+                instr->type = U_RV64M_DIVW;
               } else {
                 __builtin_unreachable();
               }
               return;
             case 0x5:
               if (un.rtype.funct7 == 0x0) {  // SRLW
-                instr->type = kSrlw;
+                instr->type = U_RV64I_SRLW;
               } else if (un.rtype.funct7 == 0x1) {  // DIVUW
-                instr->type = kDivuw;
+                instr->type = U_RV64M_DIVUW;
               } else if (un.rtype.funct7 == 0x20) {  // SRAW
-                instr->type = kSraw;
+                instr->type = U_RV64I_SRAW;
               } else {
                 __builtin_unreachable();
               }
               return;
             case 0x6:
               if (un.rtype.funct7 == 0x1) {  // REMW
-                instr->type = kRemw;
+                instr->type = U_RV64M_REMW;
               } else {
                 __builtin_unreachable();
               }
               return;
             case 0x7:
               if (un.rtype.funct7 == 0x1) {  // REMUW
-                instr->type = kRemuw;
+                instr->type = U_RV64M_REMUW;
               } else {
                 __builtin_unreachable();
               }
@@ -1015,10 +1015,10 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
           *instr = decode_r4_type(&un);
           switch (un.r4type.funct2) {
             case 0x0:  // FMADD.S
-              instr->type = kFmaddS;
+              instr->type = U_RV32F_FMADD_S;
               return;
             case 0x1:  // FMADD.D
-              instr->type = kFmaddD;
+              instr->type = U_RV32D_FMADD_D;
               return;
             default:
               __builtin_unreachable();
@@ -1030,10 +1030,10 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
           *instr = decode_r4_type(&un);
           switch (un.r4type.funct2) {
             case 0x0:  // FMSUB.S
-              instr->type = kFmsubS;
+              instr->type = U_RV32F_FMSUB_S;
               return;
             case 0x1:  // FMSUB.D
-              instr->type = kFmsubD;
+              instr->type = U_RV32D_FMSUB_D;
               return;
             default:
               __builtin_unreachable();
@@ -1045,10 +1045,10 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
           *instr = decode_r4_type(&un);
           switch (un.r4type.funct2) {
             case 0x0:  // FNMSUB.S
-              instr->type = kFnmsubS;
+              instr->type = U_RV32F_FNMSUB_S;
               return;
             case 0x1:  // FNMSUB.D
-              instr->type = kFnmsubD;
+              instr->type = U_RV32D_FNMSUB_D;
               return;
             default:
               __builtin_unreachable();
@@ -1060,10 +1060,10 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
           *instr = decode_r4_type(&un);
           switch (un.r4type.funct2) {
             case 0x0:  // FNMADD.S
-              instr->type = kFnmaddS;
+              instr->type = U_RV32F_FNMADD_S;
               return;
             case 0x1:  // FNMADD.D
-              instr->type = kFnmaddD;
+              instr->type = U_RV32D_FNMADD_D;
               return;
             default:
               __builtin_unreachable();
@@ -1075,155 +1075,155 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
           *instr = decode_r_type(&un);
           switch (un.rtype.funct7) {
             case 0x0:  // FADD.S
-              instr->type = kFaddS;
+              instr->type = U_RV32F_FADD_S;
               return;
             case 0x1:  // FADD.D
-              instr->type = kFaddD;
+              instr->type = U_RV32D_FADD_D;
               return;
             case 0x4:  // FSUB.S
-              instr->type = kFsubS;
+              instr->type = U_RV32F_FSUB_S;
               return;
             case 0x5:  // FSUB.D
-              instr->type = kFsubD;
+              instr->type = U_RV32D_FSUB_D;
               return;
             case 0x8:  // FMUL.S
-              instr->type = kFmulS;
+              instr->type = U_RV32F_FMUL_S;
               return;
             case 0x9:  // FMUL.D
-              instr->type = kFmulD;
+              instr->type = U_RV32D_FMUL_D;
               return;
             case 0xc:  // FDIV.S
-              instr->type = kFdivS;
+              instr->type = U_RV32F_FDIV_S;
               return;
             case 0xd:  // FDIV.D
-              instr->type = kFdivD;
+              instr->type = U_RV32D_FDIV_D;
               return;
             case 0x10:
               if (un.rtype.funct3 == 0x0) {  // FSGNJ.S
-                instr->type = kFsgnjS;
+                instr->type = U_RV32F_FSGNJ_S;
               } else if (un.rtype.funct3 == 0x1) {  // FSNGJN.S
-                instr->type = kFsgnjnS;
+                instr->type = U_RV32F_FSGNJN_S;
               } else if (un.rtype.funct3 == 0x2) {  // FSNGJX.S
-                instr->type = kFsgnjxS;
+                instr->type = U_RV32F_FSGNJX_S;
               } else {
                 __builtin_unreachable();
               }
               return;
             case 0x11:
               if (un.rtype.funct3 == 0x0) {  // FSGNJ.D
-                instr->type = kFsgnjD;
+                instr->type = U_RV32D_FSGNJ_D;
               } else if (un.rtype.funct3 == 0x1) {  // FSNGJN.D
-                instr->type = kFsgnjnD;
+                instr->type = U_RV32D_FSGNJN_D;
               } else if (un.rtype.funct3 == 0x2) {  // FSNGJX.D
-                instr->type = kFsgnjxD;
+                instr->type = U_RV32D_FSGNJX_D;
               } else {
                 __builtin_unreachable();
               }
               return;
             case 0x14:
               if (un.rtype.funct3 == 0x0) {  // FMIN.S
-                instr->type = kFminS;
+                instr->type = U_RV32F_FMIN_S;
               } else if (un.rtype.funct3 == 0x1) {  // FMAX.S
-                instr->type = kFmaxS;
+                instr->type = U_RV32F_FMAX_S;
               } else {
                 __builtin_unreachable();
               }
               return;
             case 0x15:
               if (un.rtype.funct3 == 0x0) {  // FMIN.D
-                instr->type = kFminD;
+                instr->type = U_RV32D_FMIN_D;
               } else if (un.rtype.funct3 == 0x1) {  // FMAX.D
-                instr->type = kFmaxD;
+                instr->type = U_RV32D_FMAX_D;
               } else {
                 __builtin_unreachable();
               }
               return;
             case 0x20:  // FCVT.S.D
               assert(un.rtype.rs2 == 0x1);
-              instr->type = kFcvtSD;
+              instr->type = U_RV32D_FCVT_S_D;
               return;
             case 0x21:  // FCVT.D.S
               assert(un.rtype.rs2 == 0x0);
-              instr->type = kFcvtDS;
+              instr->type = U_RV32D_FCVT_D_S;
               return;
             case 0x2c:  // FSQRT.S
               assert(un.rtype.rs2 == 0x0);
-              instr->type = kFsqrtS;
+              instr->type = U_RV32F_FSQRT_S;
               return;
             case 0x2d:  // FSQRT.D
               assert(un.rtype.rs2 == 0x0);
-              instr->type = kFsqrtD;
+              instr->type = U_RV32D_FSQRT_D;
               return;
             case 0x50:
               if (un.rtype.funct3 == 0x0) {  // FLE.S
-                instr->type = kFleS;
+                instr->type = U_RV32F_FLE_S;
               } else if (un.rtype.funct3 == 0x1) {  // FLT.S
-                instr->type = kFltS;
+                instr->type = U_RV32F_FLT_S;
               } else if (un.rtype.funct3 == 0x2) {  // FEQ.S
-                instr->type = kFeqS;
+                instr->type = U_RV32F_FEQ_S;
               } else {
                 __builtin_unreachable();
               }
               return;
             case 0x51:
               if (un.rtype.funct3 == 0x0) {  // FLE.D
-                instr->type = kFleD;
+                instr->type = U_RV32D_FLE_D;
               } else if (un.rtype.funct3 == 0x1) {  // FLT.D
-                instr->type = kFltD;
+                instr->type = U_RV32D_FLT_D;
               } else if (un.rtype.funct3 == 0x2) {  // FEQ.D
-                instr->type = kFeqD;
+                instr->type = U_RV32D_FEQ_D;
               } else {
                 __builtin_unreachable();
               }
               return;
             case 0x60:
               if (un.rtype.rs2 == 0x0) {  // FCVT.W.S
-                instr->type = kFcvtWS;
+                instr->type = U_RV32F_FCVT_W_S;
               } else if (un.rtype.rs2 == 0x1) {  // FCVT.WU.S
-                instr->type = kFcvtWuS;
+                instr->type = U_RV32F_FCVT_WU_S;
               } else if (un.rtype.rs2 == 0x2) {  // FCVT.L.S
-                instr->type = kFcvtLS;
+                instr->type = U_RV64F_FCVT_L_S;
               } else if (un.rtype.rs2 == 0x3) {  // FCVT.LU.S
-                instr->type = kFcvtLuS;
+                instr->type = U_RV64F_FCVT_LU_S;
               } else {
                 __builtin_unreachable();
               }
               return;
             case 0x61:
               if (un.rtype.rs2 == 0x0) {  // FCVT.W.D
-                instr->type = kFcvtWD;
+                instr->type = U_RV32D_FCVT_W_D;
               } else if (un.rtype.rs2 == 0x1) {  // FCVT.WU.D
-                instr->type = kFcvtWuD;
+                instr->type = U_RV32D_FCVT_WU_D;
               } else if (un.rtype.rs2 == 0x2) {  // FCVT.L.D
-                instr->type = kFcvtLD;
+                instr->type = U_RV64D_FCVT_L_D;
               } else if (un.rtype.rs2 == 0x3) {  // FCVT.LU.D
-                instr->type = kFcvtLuD;
+                instr->type = U_RV64D_FCVT_LU_D;
               } else {
                 __builtin_unreachable();
               }
               return;
             case 0x68:
               if (un.rtype.rs2 == 0x0) {  // FCVT.S.W
-                instr->type = kFcvtSW;
+                instr->type = U_RV32F_FCVT_S_W;
               } else if (un.rtype.rs2 == 0x1) {  // FCVT.S.WU
-                instr->type = kFcvtSWu;
+                instr->type = U_RV32F_FCVT_S_WU;
               } else if (un.rtype.rs2 == 0x2) {  // FCVT.S.L
-                instr->type = kFcvtSL;
+                instr->type = U_RV64F_FCVT_S_L;
               } else if (un.rtype.rs2 == 0x3) {  // FCVT.S.LU
-                instr->type = kFcvtSLu;
+                instr->type = U_RV64F_FCVT_S_LU;
               } else {
                 __builtin_unreachable();
               }
               return;
             case 0x69:
               if (un.rtype.rs2 == 0x0) {  // FCVT.D.W
-                instr->type = kFcvtDW;
+                instr->type = U_RV32D_FCVT_D_W;
               } else if (un.rtype.rs2 == 0x1) {  // FCVT.D.WU
-                instr->type = kFcvtDWu;
+                instr->type = U_RV32D_FCVT_D_WU;
               } else if (un.rtype.rs2 == 0x2) {  // FCVT.D.L
-                instr->type = kFcvtDL;
+                instr->type = U_RV64D_FCVT_D_L;
               } else if (un.rtype.rs2 == 0x3) {  // FCVT.D.LU
-                instr->type = kFcvtDLu;
+                instr->type = U_RV64D_FCVT_D_LU;
               } else {
                 __builtin_unreachable();
               }
@@ -1231,9 +1231,9 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
             case 0x70:
               assert(un.rtype.rs2 == 0x0);
               if (un.rtype.funct3 == 0x0) {  // FMV.X.W
-                instr->type = kFmvXW;
+                instr->type = U_RV32F_FMV_X_W;
               } else if (un.rtype.funct3 == 0x1) {  // FCLASS.S
-                instr->type = kFclassS;
+                instr->type = U_RV32F_FCLASS_S;
               } else {
                 __builtin_unreachable();
               }
@@ -1241,20 +1241,20 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
             case 0x71:
               assert(un.rtype.rs2 == 0x0);
               if (un.rtype.funct3 == 0x0) {  // FMV.X.D
-                instr->type = kFmvXD;
+                instr->type = U_RV64D_FMV_X_D;
               } else if (un.rtype.funct3 == 0x1) {  // FCLASS.D
-                instr->type = kFclassD;
+                instr->type = U_RV32D_FCLASS_D;
               } else {
                 __builtin_unreachable();
               }
               return;
             case 0x78:  // FMV.W.X
               assert(un.rtype.rs2 == 0x0 && un.rtype.funct3 == 0x0);
-              instr->type = kFmvWX;
+              instr->type = U_RV32F_FMV_W_X;
               return;
             case 0x79:  // FMV.D.X
               assert(un.rtype.rs2 == 0x0 && un.rtype.funct3 == 0x0);
-              instr->type = kFmvDX;
+              instr->type = U_RV64D_FMV_D_X;
               return;
             default:
               __builtin_unreachable();
@@ -1266,22 +1266,22 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
           *instr = decode_b_type(&un);
           switch (un.btype.funct3) {
             case 0x0:  // BEQ
-              instr->type = kBeq;
+              instr->type = U_RV32I_BEQ;
               return;
             case 0x1:  // BNE
-              instr->type = kBne;
+              instr->type = U_RV32I_BNE;
               return;
             case 0x4:  // BLT
-              instr->type = kBlt;
+              instr->type = U_RV32I_BLT;
               return;
             case 0x5:  // BGE
-              instr->type = kBge;
+              instr->type = U_RV32I_BGE;
               return;
             case 0x6:  // BLTU
-              instr->type = kBltu;
+              instr->type = U_RV32I_BLTU;
               return;
             case 0x7:  // BGEU
-              instr->type = kBgeu;
+              instr->type = U_RV32I_BGEU;
               return;
             default:
               __builtin_unreachable();
@@ -1291,46 +1291,59 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
 
         case 0x19: {  // I-type: JALR
           *instr = decode_i_type(&un);
-          instr->type = kJalr;
+          instr->type = U_RV32I_JALR;
           instr->cont = true;
           return;
         }  // case 0x19
 
         case 0x1b: {  // J-type: JAL
           *instr = decode_j_type(&un);
-          instr->type = kJal;
+          instr->type = U_RV32I_JAL;
           instr->cont = true;
           return;
         }  // case 0x1b
 
         case 0x1c: {  // I-type
-          *instr = decode_i_type_with_csr(&un);
-          switch (un.itype.funct3) {
-            case 0x0:  // ECALL
-              instr->type = kEcall;
-              instr->cont = true;
-              return;
-            case 0x1:  // CSRRW
-              instr->type = kCsrrw;
-              return;
-            case 0x2:  // CSRRS
-              instr->type = kCsrrs;
-              return;
-            case 0x3:  // CSRRC
-              instr->type = kCsrrc;
-              return;
-            case 0x5:  // CSRRWI
-              instr->type = kCsrrwi;
-              return;
-            case 0x6:  // CSRRSI
-              instr->type = kCsrrsi;
-              return;
-            case 0x7:  // CSRRCI
-              instr->type = kCsrrci;
-              return;
-            default:
-              __builtin_unreachable();
-          }  // switch funct3
+          if (un.itype.funct3 == 0x0) {
+            switch (un.itype.imm11_0) {
+              case 0x000:  // ECALL
+                instr->type = U_RV32I_ECALL;
+                instr->cont = true;
+                return;
+              case 0x001:  // EBREAK
+                instr->type = U_RV32I_EBREAK;
+                return;
+              case 0x302:  // MRET
+                instr->type = P_MRET;
+                return;
+              default:
+                __builtin_unreachable();
+            }
+          } else {  // I-type: Zicsr
+            *instr = decode_i_type_with_csr(&un);
+            switch (un.itype.funct3) {
+              case 0x1:  // CSRRW
+                instr->type = U_ZICSR_CSRRW;
+                return;
+              case 0x2:  // CSRRS
+                instr->type = U_ZICSR_CSRRS;
+                return;
+              case 0x3:  // CSRRC
+                instr->type = U_ZICSR_CSRRC;
+                return;
+              case 0x5:  // CSRRWI
+                instr->type = U_ZICSR_CSRRWI;
+                return;
+              case 0x6:  // CSRRSI
+                instr->type = U_ZICSR_CSRRSI;
+                return;
+              case 0x7:  // CSRRCI
+                instr->type = U_ZICSR_CSRRCI;
+                return;
+              default:
+                __builtin_unreachable();
+            }  // switch funct3
+          }
           __builtin_unreachable();
         }  // case 0x1c
 

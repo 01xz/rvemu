@@ -5,29 +5,29 @@
 
 typedef enum {
   // clang-format off
-  kZero,
-  kRa,
-  kSp,
-  kGp,
-  kTp,
-  kT0, kT1, kT2,
-  kS0, kS1,
-  kA0, kA1, kA2, kA3, kA4, kA5, kA6, kA7,
-  kS2, kS3, kS4, kS5, kS6, kS7, kS8, kS9, kS10, kS11,
-  kT3, kT4, kT5, kT6,
-  kXRegNum,
+  X_REG_ZERO,
+  X_REG_RA,
+  X_REG_SP,
+  X_REG_GP,
+  X_REG_TP,
+  X_REG_T0, X_REG_T1, X_REG_T2,
+  X_REG_S0, X_REG_S1,
+  X_REG_A0, X_REG_A1, X_REG_A2, X_REG_A3, X_REG_A4, X_REG_A5, X_REG_A6, X_REG_A7,
+  X_REG_S2, X_REG_S3, X_REG_S4, X_REG_S5, X_REG_S6, X_REG_S7, X_REG_S8, X_REG_S9, X_REG_S10, X_REG_S11,
+  X_REG_T3, X_REG_T4, X_REG_T5, X_REG_T6,
+  X_REG_NUM,
   // clang-format on
 } XRegType;
 
 typedef enum {
   // clang-format off
-  kFt0, kFt1, kFt2, kFt3, kFt4, kFt5, kFt6, kFt7,
-  kFs0, kFs1,
-  kFa0, kFa1, kFa2, kFa3, kFa4, kFa5, kFa6, kFa7,
-  kFs2, kFs3, kFs4, kFs5, kFs6, kFs7, kFs8, kFs9, kFs10, kFs11,
-  kFt8, kFt9, kFt10, kFt11,
-  kFRegNum,
-  // clang-format on
+  F_REG_FT0, F_REG_FT1, F_REG_FT2, F_REG_FT3, F_REG_FT4, F_REG_FT5, F_REG_FT6, F_REG_FT7,
+  F_REG_FS0, F_REG_FS1,
+  F_REG_FA0, F_REG_FA1, F_REG_FA2, F_REG_FA3, F_REG_FA4, F_REG_FA5, F_REG_FA6, F_REG_FA7,
+  F_REG_FS2, F_REG_FS3, F_REG_FS4, F_REG_FS5, F_REG_FS6, F_REG_FS7, F_REG_FS8, F_REG_FS9, F_REG_FS10, F_REG_FS11,
+  F_REG_FT8, F_REG_FT9, F_REG_FT10, F_REG_FT11,
+  F_REG_NUM,
+  // clang-format off
 } FRegType;
 
 typedef union {
