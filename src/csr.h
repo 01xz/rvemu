@@ -1,6 +1,7 @@
 #ifndef RVEMU_CSR_H_
 #define RVEMU_CSR_H_
 
+#include "types.h"
 typedef enum {
   // Unprivileged Floating-Point CSRs
   CSR_FFLAGS = 0x001,
@@ -34,5 +35,34 @@ typedef enum {
   // Total Numbers
   CSR_NUM = 4096,
 } CsrType;
+
+typedef struct {
+  u64 wpri_0 : 1;
+  u64 sie    : 1;
+  u64 wpri_1 : 1;
+  u64 mie    : 1;
+  u64 wpri_2 : 1;
+  u64 spie   : 1;
+  u64 ube    : 1;
+  u64 mpie   : 1;
+  u64 spp    : 1;
+  u64 wpri_3 : 2;
+  u64 mpp    : 2;
+  u64 fs     : 2;
+  u64 xs     : 2;
+  u64 mprv   : 1;
+  u64 sum    : 1;
+  u64 mxr    : 1;
+  u64 tvm    : 1;
+  u64 tw     : 1;
+  u64 tsr    : 1;
+  u64 wpri_4 : 9;
+  u64 uxl    : 2;
+  u64 sxl    : 2;
+  u64 sbe    : 1;
+  u64 mbe    : 1;
+  u64 wpri_5 : 25;
+  u64 sd     : 1;
+} Mstatus;
 
 #endif  // RVEMU_CSR_H_
