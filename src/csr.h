@@ -91,4 +91,25 @@ typedef struct {
   u64 sd     : 1;
 } Mstatus;
 
+typedef struct {
+  u64 wpri_0 : 1;
+  u64 sie    : 1;
+  u64 wpri_1 : 3;
+  u64 spie   : 1;
+  u64 ube    : 1;
+  u64 wpri_2 : 1;
+  u64 spp    : 1;
+  u64 vs     : 2;
+  u64 wpri_3 : 2;
+  u64 fs     : 2;
+  u64 xs     : 2;
+  u64 wpri_4 : 1;
+  u64 sum    : 1;
+  u64 mxr    : 1;
+  u64 wpri_5 : 12;
+  u64 uxl    : 2;
+  u64 wpri_6 : 29;
+  u64 sd     : 1;
+} Sstatus;
+
 #endif  // RVEMU_CSR_H_
