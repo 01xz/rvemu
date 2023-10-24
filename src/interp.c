@@ -785,6 +785,92 @@ static void handler_fclass_d(State* state, RvInstr* instr) {
   state->xregs[instr->rd] = __classify_d(state->fregs[instr->rs1].d);
 }
 
+#define __STORE_MSTATUS_FIELD(field, value)             \
+  union {                                               \
+    u64 raw;                                            \
+    Mstatus mstatus;                                    \
+  } mstatus_un = {.raw = load_csr(state, CSR_MSTATUS)}; \
+  mstatus_un.mstatus.field = value;                     \
+  store_csr(state, CSR_MSTATUS, mstatus_un.raw);
+
+static void handler_sret(State* state, RvInstr* instr) {
+  union {
+    u64 raw;
+    Sstatus sstatus;
+  } un = {.raw = load_csr(state, CSR_SSTATUS)};
+
+  // new privilege mode, according to the values of SPP
+  state->mode = un.sstatus.spp;
+  switch (un.sstatus.spp) {
+    case 0x0:
+      state->mode = kUser;
+      break;
+    case 0x1: {
+      __STORE_MSTATUS_FIELD(mprv, 0);
+      state->mode = kSupervisor;
+      break;
+    }
+    default:
+      state->mode = kDebug;
+      break;
+  }
+
+  // set SPP = 0
+  un.sstatus.spp = 0;
+
+  // set SIE = SPIE
+  un.sstatus.sie = un.sstatus.spie;
+
+  // set SPIE = 1
+  un.sstatus.spie = 1;
+
+  store_csr(state, CSR_SSTATUS, un.raw);
+
+  // set PC = SEPC
+  state->re_enter_pc = load_csr(state, CSR_SEPC);
+  state->exit_reason = kDirectBranch;
+}
+
+static void handler_mret(State* state, RvInstr* instr) {
+  union {
+    u64 raw;
+    Mstatus mstatus;
+  } un = {.raw = load_csr(state, CSR_MSTATUS)};
+
+  // new privilege mode, according to the values of MPP
+  switch (un.mstatus.mpp) {
+    case 0x0:
+      un.mstatus.mprv = 0;
+      state->mode = kUser;
+      break;
+    case 0x1:
+      un.mstatus.mprv = 0;
+      state->mode = kSupervisor;
+      break;
+    case 0x3:
+      state->mode = kMachine;
+      break;
+    default:
+      state->mode = kDebug;
+      break;
+  }
+
+  // set MPP = 0
+  un.mstatus.mpp = 0;
+
+  // set MIE = MPIE
+  un.mstatus.mie = un.mstatus.mpie;
+
+  // set MPIE = 1
+  un.mstatus.mpie = 1;
+
+  store_csr(state, CSR_MSTATUS, un.raw);
+
+  // set PC = MEPC
+  state->re_enter_pc = load_csr(state, CSR_MEPC);
+  state->exit_reason = kDirectBranch;
+}
+
 static void handler_ni(State* state, RvInstr* instr) {}
 
 static void (*rv_instr_handler[RV_INSTR_NUM])(State*, RvInstr*) = {
@@ -960,8 +1046,8 @@ static void (*rv_instr_handler[RV_INSTR_NUM])(State*, RvInstr*) = {
     [U_RV64D_FCVT_D_LU] = handler_fcvt_d_lu,
     [U_RV64D_FMV_D_X] = handler_fmv_d_x,
     // privileged: trap-return
-    [P_SRET] = handler_ni,
-    [P_MRET] = handler_ni,
+    [P_SRET] = handler_sret,
+    [P_MRET] = handler_mret,
     // privileged: interrupt-management
     [P_WFI] = handler_ni,
     // privileged: supervisor memory-management

@@ -1313,8 +1313,13 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               case 0x001:  // EBREAK
                 instr->type = U_RV32I_EBREAK;
                 return;
+              case 0x102:  // SRET
+                instr->type = P_SRET;
+                instr->cont = true;
+                return;
               case 0x302:  // MRET
                 instr->type = P_MRET;
+                instr->cont = true;
                 return;
               default:
                 __builtin_unreachable();
