@@ -37,15 +37,13 @@ typedef enum {
 } CsrType;
 
 typedef struct {
-  struct {
-    u32 nx : 1;
-    u32 uf : 1;
-    u32 of : 1;
-    u32 dz : 1;
-    u32 nv : 1;
-  } fflags;
-  u32 frm : 3;
-  u32     : 24;
+  u32 fflags_nx : 1;
+  u32 fflags_uf : 1;
+  u32 fflags_of : 1;
+  u32 fflags_dz : 1;
+  u32 fflags_nv : 1;
+  u32 frm       : 3;
+  u32           : 24;
 } Fcsr;
 
 typedef struct {
