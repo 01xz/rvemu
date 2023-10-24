@@ -37,6 +37,18 @@ typedef enum {
 } CsrType;
 
 typedef struct {
+  struct {
+    u32 nx : 1;
+    u32 uf : 1;
+    u32 of : 1;
+    u32 dz : 1;
+    u32 nv : 1;
+  } fflags;
+  u32 frm : 3;
+  u32     : 24;
+} Fcsr;
+
+typedef struct {
   u64 wpri_0 : 1;
   u64 sie    : 1;
   u64 wpri_1 : 1;
