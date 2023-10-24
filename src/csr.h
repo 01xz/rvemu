@@ -37,13 +37,29 @@ typedef enum {
 } CsrType;
 
 typedef struct {
-  u32 fflags_nx : 1;
-  u32 fflags_uf : 1;
-  u32 fflags_of : 1;
-  u32 fflags_dz : 1;
-  u32 fflags_nv : 1;
-  u32 frm       : 3;
-  u32           : 24;
+  u64 nx : 1;
+  u64 uf : 1;
+  u64 of : 1;
+  u64 dz : 1;
+  u64 nv : 1;
+  u64    : 59;
+} Fflags;
+
+typedef enum {
+  kRne = 0x0,
+  kRtz = 0x1,
+  kRdn = 0x2,
+  kRup = 0x3,
+  kRmm = 0x4,
+  kDyn = 0x7,
+  kInvalid,
+} RoundingMode;
+
+typedef struct {
+  u64 fflags   : 5;
+  u64 frm      : 3;
+  u64 reserved : 24;
+  u64          : 32;
 } Fcsr;
 
 typedef struct {

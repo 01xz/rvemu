@@ -326,20 +326,54 @@ static void handler_ecall(State* state, RvInstr* instr) {
   state->exit_reason = kECall;
 }
 
+#define __LOAD_FCSR_FIELD(field)     \
+  union {                            \
+    u64 raw;                         \
+    Fcsr fcsr;                       \
+  } un = {.raw = state->csrs[addr]}; \
+  return (u64)0 | un.fcsr.field;
+
 static u64 load_csr(const State* state, u16 addr) {
-  if (addr == CSR_SIE) {
-    return state->csrs[CSR_MIE] & state->csrs[CSR_MIDELEG];
+  switch (addr) {
+    case CSR_FFLAGS: {
+      __LOAD_FCSR_FIELD(fflags);
+    }
+    case CSR_FRM: {
+      __LOAD_FCSR_FIELD(frm);
+    }
+    case CSR_SIE:
+      return state->csrs[CSR_MIE] & state->csrs[CSR_MIDELEG];
+    default:
+      return state->csrs[addr];
   }
-  return state->csrs[addr];
 }
 
+#define __STORE_FCSR_FIELD(field)    \
+  union {                            \
+    u64 raw;                         \
+    Fcsr fcsr;                       \
+  } un = {.raw = state->csrs[addr]}; \
+  un.fcsr.field = value;             \
+  state->csrs[addr] = un.raw;
+
 static void store_csr(State* state, u16 addr, u64 value) {
-  if (addr == CSR_SIE) {
-    state->csrs[addr] = (state->csrs[CSR_MIE] & ~(state->csrs[CSR_MIDELEG])) |
-                        (value & state->csrs[CSR_MIDELEG]);
-    return;
+  switch (addr) {
+    case CSR_FFLAGS: {
+      __STORE_FCSR_FIELD(fflags);
+      return;
+    }
+    case CSR_FRM: {
+      __STORE_FCSR_FIELD(frm);
+      return;
+    }
+    case CSR_SIE:
+      state->csrs[addr] = (state->csrs[CSR_MIE] & ~(state->csrs[CSR_MIDELEG])) |
+                          (value & state->csrs[CSR_MIDELEG]);
+      return;
+    default:
+      state->csrs[addr] = value;
+      return;
   }
-  state->csrs[addr] = value;
 }
 
 static void update_paging(State* state, u16 addr) {
