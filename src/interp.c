@@ -326,12 +326,12 @@ static void handler_ecall(State* state, RvInstr* instr) {
   state->exit_reason = kECall;
 }
 
-#define __LOAD_FCSR_FIELD(field)     \
-  union {                            \
-    u64 raw;                         \
-    Fcsr fcsr;                       \
-  } un = {.raw = state->csrs[addr]}; \
-  return (u64)0 | un.fcsr.field;
+#define __LOAD_FCSR_FIELD(field)          \
+  union {                                 \
+    u64 raw;                              \
+    Fcsr fcsr;                            \
+  } fcsr_un = {.raw = state->csrs[addr]}; \
+  return (u64)0 | fcsr_un.fcsr.field;
 
 static u64 load_csr(const State* state, u16 addr) {
   switch (addr) {
@@ -348,13 +348,13 @@ static u64 load_csr(const State* state, u16 addr) {
   }
 }
 
-#define __STORE_FCSR_FIELD(field)    \
-  union {                            \
-    u64 raw;                         \
-    Fcsr fcsr;                       \
-  } un = {.raw = state->csrs[addr]}; \
-  un.fcsr.field = value;             \
-  state->csrs[addr] = un.raw;
+#define __STORE_FCSR_FIELD(field)         \
+  union {                                 \
+    u64 raw;                              \
+    Fcsr fcsr;                            \
+  } fcsr_un = {.raw = state->csrs[addr]}; \
+  fcsr_un.fcsr.field = value;             \
+  state->csrs[addr] = fcsr_un.raw;
 
 static void store_csr(State* state, u16 addr, u64 value) {
   switch (addr) {
