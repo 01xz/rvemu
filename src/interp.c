@@ -800,7 +800,6 @@ static void handler_sret(State* state, RvInstr* instr) {
   } un = {.raw = load_csr(state, CSR_SSTATUS)};
 
   // new privilege mode, according to the values of SPP
-  state->mode = un.sstatus.spp;
   switch (un.sstatus.spp) {
     case 0x0:
       state->mode = kUser;
