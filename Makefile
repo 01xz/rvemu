@@ -4,7 +4,7 @@ SRC_DIR = src
 
 BUILD_DIR = build
 OBJ_DIR = $(BUILD_DIR)/obj
-EXE_DIR = $(BUILD_DIR)/bin
+EXE_DIR = $(BUILD_DIR)
 
 HDRS = $(wildcard $(SRC_DIR)/*.h)
 SRCS = $(wildcard $(SRC_DIR)/*.c)
