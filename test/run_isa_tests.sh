@@ -3,6 +3,8 @@
 TARGET="riscv64-unknown-elf"
 RISCV_TESTS="$RISCV/$TARGET/share/riscv-tests"
 
+RISCV_ISA_TESTS="$RISCV_TESTS/isa"
+
 RVEMU="../build/rvemu"
 
 passed_count=0
@@ -11,7 +13,7 @@ failed_tests=""
 
 test_pattern=${1:-"rv64ui-p"}
 
-for isa_test in $RISCV_TESTS/isa/$test_pattern-*; do
+for isa_test in $RISCV_ISA_TESTS/$test_pattern-*; do
     if [[ "$isa_test" != *.dump ]]; then
         ./$RVEMU "$isa_test"
         result=$?
