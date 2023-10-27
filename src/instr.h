@@ -1,190 +1,160 @@
 #ifndef RVEMU_INSTR_H_
 #define RVEMU_INSTR_H_
 
-typedef enum {
-  // unprivileged: rv32i
-  U_RV32I_LUI,
-  U_RV32I_AUIPC,
-  U_RV32I_JAL,
-  U_RV32I_JALR,
-  U_RV32I_BEQ,
-  U_RV32I_BNE,
-  U_RV32I_BLT,
-  U_RV32I_BGE,
-  U_RV32I_BLTU,
-  U_RV32I_BGEU,
-  U_RV32I_LB,
-  U_RV32I_LH,
-  U_RV32I_LW,
-  U_RV32I_LBU,
-  U_RV32I_LHU,
-  U_RV32I_SB,
-  U_RV32I_SH,
-  U_RV32I_SW,
-  U_RV32I_ADDI,
-  U_RV32I_SLTI,
-  U_RV32I_SLTIU,
-  U_RV32I_XORI,
-  U_RV32I_ORI,
-  U_RV32I_ANDI,
-  U_RV32I_SLLI,
-  U_RV32I_SRLI,
-  U_RV32I_SRAI,
-  U_RV32I_ADD,
-  U_RV32I_SUB,
-  U_RV32I_SLL,
-  U_RV32I_SLT,
-  U_RV32I_SLTU,
-  U_RV32I_XOR,
-  U_RV32I_SRL,
-  U_RV32I_SRA,
-  U_RV32I_OR,
-  U_RV32I_AND,
-  U_RV32I_FENCE,
-  U_RV32I_ECALL,
-  U_RV32I_EBREAK,
-  // unprivileged: rv64i
-  U_RV64I_LWU,
-  U_RV64I_LD,
-  U_RV64I_SD,
-  U_RV64I_SLLI,
-  U_RV64I_SRLI,
-  U_RV64I_SRAI,
-  U_RV64I_ADDIW,
-  U_RV64I_SLLIW,
-  U_RV64I_SRLIW,
-  U_RV64I_SRAIW,
-  U_RV64I_ADDW,
-  U_RV64I_SUBW,
-  U_RV64I_SLLW,
-  U_RV64I_SRLW,
-  U_RV64I_SRAW,
-  // unprivileged: zifencei
-  U_ZIFENCEI_FENCE_I,
-  // unprivileged: zicsr
-  U_ZICSR_CSRRW,
-  U_ZICSR_CSRRS,
-  U_ZICSR_CSRRC,
-  U_ZICSR_CSRRWI,
-  U_ZICSR_CSRRSI,
-  U_ZICSR_CSRRCI,
-  // unprivileged: rv32m
-  U_RV32M_MUL,
-  U_RV32M_MULH,
-  U_RV32M_MULHSU,
-  U_RV32M_MULHU,
-  U_RV32M_DIV,
-  U_RV32M_DIVU,
-  U_RV32M_REM,
-  U_RV32M_REMU,
-  // unprivileged: rv64m
-  U_RV64M_MULW,
-  U_RV64M_DIVW,
-  U_RV64M_DIVUW,
-  U_RV64M_REMW,
-  U_RV64M_REMUW,
-  // unprivileged: rv32a
-  U_RV32A_LR_W,
-  U_RV32A_SC_W,
-  U_RV32A_AMOSWAP_W,
-  U_RV32A_AMOADD_W,
-  U_RV32A_AMOXOR_W,
-  U_RV32A_AMOAND_W,
-  U_RV32A_AMOOR_W,
-  U_RV32A_AMOMIN_W,
-  U_RV32A_AMOMAX_W,
-  U_RV32A_AMOMINU_W,
-  U_RV32A_AMOMAXU_W,
-  // unprivileged: rv64a
-  U_RV64A_LR_D,
-  U_RV64A_SC_D,
-  U_RV64A_AMOSWAP_D,
-  U_RV64A_AMOADD_D,
-  U_RV64A_AMOXOR_D,
-  U_RV64A_AMOAND_D,
-  U_RV64A_AMOOR_D,
-  U_RV64A_AMOMIN_D,
-  U_RV64A_AMOMAX_D,
-  U_RV64A_AMOMINU_D,
-  U_RV64A_AMOMAXU_D,
-  // unprivileged: rv32f
-  U_RV32F_FLW,
-  U_RV32F_FSW,
-  U_RV32F_FMADD_S,
-  U_RV32F_FMSUB_S,
-  U_RV32F_FNMSUB_S,
-  U_RV32F_FNMADD_S,
-  U_RV32F_FADD_S,
-  U_RV32F_FSUB_S,
-  U_RV32F_FMUL_S,
-  U_RV32F_FDIV_S,
-  U_RV32F_FSQRT_S,
-  U_RV32F_FSGNJ_S,
-  U_RV32F_FSGNJN_S,
-  U_RV32F_FSGNJX_S,
-  U_RV32F_FMIN_S,
-  U_RV32F_FMAX_S,
-  U_RV32F_FCVT_W_S,
-  U_RV32F_FCVT_WU_S,
-  U_RV32F_FMV_X_W,
-  U_RV32F_FEQ_S,
-  U_RV32F_FLT_S,
-  U_RV32F_FLE_S,
-  U_RV32F_FCLASS_S,
-  U_RV32F_FCVT_S_W,
-  U_RV32F_FCVT_S_WU,
-  U_RV32F_FMV_W_X,
-  // unprivileged: rv64f
-  U_RV64F_FCVT_L_S,
-  U_RV64F_FCVT_LU_S,
-  U_RV64F_FCVT_S_L,
-  U_RV64F_FCVT_S_LU,
-  // unprivileged: rv32d
-  U_RV32D_FLD,
-  U_RV32D_FSD,
-  U_RV32D_FMADD_D,
-  U_RV32D_FMSUB_D,
-  U_RV32D_FNMSUB_D,
-  U_RV32D_FNMADD_D,
-  U_RV32D_FADD_D,
-  U_RV32D_FSUB_D,
-  U_RV32D_FMUL_D,
-  U_RV32D_FDIV_D,
-  U_RV32D_FSQRT_D,
-  U_RV32D_FSGNJ_D,
-  U_RV32D_FSGNJN_D,
-  U_RV32D_FSGNJX_D,
-  U_RV32D_FMIN_D,
-  U_RV32D_FMAX_D,
-  U_RV32D_FCVT_S_D,
-  U_RV32D_FCVT_D_S,
-  U_RV32D_FEQ_D,
-  U_RV32D_FLT_D,
-  U_RV32D_FLE_D,
-  U_RV32D_FCLASS_D,
-  U_RV32D_FCVT_W_D,
-  U_RV32D_FCVT_WU_D,
-  U_RV32D_FCVT_D_W,
-  U_RV32D_FCVT_D_WU,
-  // unprivileged: rv64d
-  U_RV64D_FCVT_L_D,
-  U_RV64D_FCVT_LU_D,
-  U_RV64D_FMV_X_D,
-  U_RV64D_FCVT_D_L,
-  U_RV64D_FCVT_D_LU,
-  U_RV64D_FMV_D_X,
-  // privileged: trap-return
-  P_SRET,
-  P_MRET,
-  // privileged: interrupt-management
-  P_WFI,
-  // privileged: supervisor memory-management
-  P_SFENCE_VMA,
-  P_SINVAL_VMA,
-  P_SFENCE_W_INVAL,
-  P_SFENCE_INVAL_IR,
-  // total numbers
-  RV_INSTR_NUM,
-} RvInstrType;
+// clang-format off
+#define RV32I_INSTRS(_)                                                   \
+  _(LUI)                                                                  \
+  _(AUIPC)                                                                \
+  _(JAL)                                                                  \
+  _(JALR)                                                                 \
+  _(BEQ) _(BNE) _(BLT) _(BGE) _(BLTU) _(BGEU)                             \
+  _(LB) _(LH) _(LW) _(LBU) _(LHU)                                         \
+  _(SB) _(SH) _(SW)                                                       \
+  _(ADDI) _(SLTI) _(SLTIU) _(XORI) _(ORI) _(ANDI) _(SLLI) _(SRLI) _(SRAI) \
+  _(ADD) _(SUB) _(SLL) _(SLT) _(SLTU) _(XOR) _(SRL) _(SRA) _(OR) _(AND)   \
+  _(FENCE)                                                                \
+  _(ECALL) _(EBREAK)
+// clang-format on
+
+#define RV32I_NAMES(s) U_RV32I_##s,
+
+// clang-format off
+#define RV64I_INSTRS(_)               \
+  _(LWU) _(LD)                        \
+  _(SD)                               \
+  _(SLLI) _(SRLI) _(SRAI)             \
+  _(ADDIW) _(SLLIW) _(SRLIW) _(SRAIW) \
+  _(ADDW) _(SUBW) _(SLLW) _(SRLW) _(SRAW)
+// clang-format on
+
+#define RV64I_NAMES(s) U_RV64I_##s,
+
+// clang-format off
+#define ZIFENCEI_INSTRS(_) \
+  _(FENCE_I)
+// clang-format on
+
+#define ZIFENCEI_NAMES(s) U_ZIFENCEI_##s,
+
+// clang-format off
+#define ZICSR_INSTRS(_) \
+  _(CSRRW) _(CSRRS) _(CSRRC) _(CSRRWI) _(CSRRSI) _(CSRRCI)
+// clang-format on
+
+#define ZICSR_NAMES(s) U_ZICSR_##s,
+
+// clang-format off
+#define RV32M_INSTRS(_) \
+  _(MUL) _(MULH) _(MULHSU) _(MULHU) _(DIV) _(DIVU) _(REM) _(REMU)
+// clang-format on
+
+#define RV32M_NAMES(s) U_RV32M_##s,
+
+// clang-format off
+#define RV64M_INSTRS(_) \
+  _(MULW) _(DIVW) _(DIVUW) _(REMW) _(REMUW)
+// clang-format on
+
+#define RV64M_NAMES(s) U_RV64M_##s,
+
+// clang-format off
+#define RV32A_INSTRS(_)        \
+  _(LR)                        \
+  _(SC)                        \
+  _(AMOSWAP)                   \
+  _(AMOADD)                    \
+  _(AMOXOR) _(AMOAND) _(AMOOR) \
+  _(AMOMIN) _(AMOMAX) _(AMOMINU) _(AMOMAXU)
+// clang-format on
+
+#define RV32A_NAMES(s) U_RV32A_##s##_W,
+
+#define RV64A_INSTRS RV32A_INSTRS
+
+#define RV64A_NAMES(s) U_RV64A_##s##_D,
+
+// clang-format off
+#define RV32F_INSTRS(_)                         \
+  _(FLW)                                        \
+  _(FSW)                                        \
+  _(FMADD_S) _(FMSUB_S) _(FNMSUB_S) _(FNMADD_S) \
+  _(FADD_S) _(FSUB_S) _(FMUL_S) _(FDIV_S)       \
+  _(FSQRT_S)                                    \
+  _(FSGNJ_S) _(FSGNJN_S) _(FSGNJX_S)            \
+  _(FMIN_S) _(FMAX_S)                           \
+  _(FCVT_W_S) _(FCVT_WU_S)                      \
+  _(FMV_X_W)                                    \
+  _(FEQ_S) _(FLT_S) _(FLE_S)                    \
+  _(FCLASS_S)                                   \
+  _(FCVT_S_W) _(FCVT_S_WU)                      \
+  _(FMV_W_X)
+// clang-format on
+
+#define RV32F_NAMES(s) U_RV32F_##s,
+
+// clang-format off
+#define RV64F_INSTRS(_) \
+  _(FCVT_L_S) _(FCVT_LU_S) _(FCVT_S_L) _(FCVT_S_LU)
+// clang-format on
+
+#define RV64F_NAMES(s) U_RV64F_##s,
+
+// clang-format off
+#define RV32D_INSTRS(_)                         \
+  _(FLD)                                        \
+  _(FSD)                                        \
+  _(FMADD_D) _(FMSUB_D) _(FNMSUB_D) _(FNMADD_D) \
+  _(FADD_D) _(FSUB_D) _(FMUL_D) _(FDIV_D)       \
+  _(FSQRT_D)                                    \
+  _(FSGNJ_D) _(FSGNJN_D) _(FSGNJX_D)            \
+  _(FMIN_D) _(FMAX_D)                           \
+  _(FCVT_S_D) _(FCVT_D_S)                       \
+  _(FEQ_D) _(FLT_D) _(FLE_D)                    \
+  _(FCLASS_D)                                   \
+  _(FCVT_W_D) _(FCVT_WU_D) _(FCVT_D_W) _(FCVT_D_WU)
+// clang-format on
+
+#define RV32D_NAMES(s) U_RV32D_##s,
+
+// clang-format off
+#define RV64D_INSTRS(_) \
+  _(FCVT_L_D) _(FCVT_LU_D) _(FMV_X_D) _(FCVT_D_L) _(FCVT_D_LU) _(FMV_D_X)
+// clang-format on
+
+#define RV64D_NAMES(s) U_RV64D_##s,
+
+// clang-format off
+#define PRIVILEGED_INSTRS(_) \
+  _(SRET) _(MRET)            \
+  _(WFI)                     \
+  _(SFENCE_VMA) _(SINVAL_VMA) _(SFENCE_W_INVAL) _(SFENCE_INVAL_IR)
+// clang-format on
+
+#define PRIVILEGED_NAMES(s) P_##s,
+
+#define EXTENSION(s) s##_INSTRS(s##_NAMES)
+
+#define RVEMU_ISA(...)        \
+  typedef enum {              \
+    __VA_ARGS__ RV_INSTR_NUM, \
+  } RvInstrType;
+
+// clang-format off
+RVEMU_ISA(              \
+  EXTENSION(RV32I)      \
+  EXTENSION(RV64I)      \
+  EXTENSION(ZIFENCEI)   \
+  EXTENSION(ZICSR)      \
+  EXTENSION(RV32M)      \
+  EXTENSION(RV64M)      \
+  EXTENSION(RV32A)      \
+  EXTENSION(RV64A)      \
+  EXTENSION(RV32F)      \
+  EXTENSION(RV64F)      \
+  EXTENSION(RV32D)      \
+  EXTENSION(RV64D)      \
+  EXTENSION(PRIVILEGED) \
+);
+// clang-format on
 
 #endif  // RVEMU_INSTR_H_
