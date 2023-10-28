@@ -2,6 +2,7 @@
 #define RVEMU_CSR_H_
 
 #include "types.h"
+
 typedef enum {
   // Unprivileged Floating-Point CSRs
   CSR_FFLAGS = 0x001,
