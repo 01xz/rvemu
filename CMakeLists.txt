@@ -12,6 +12,10 @@ file(GLOB_RECURSE C_FILES
 
 add_executable(${PROJECT_NAME} ${C_FILES})
 
+target_include_directories(${PROJECT_NAME} PRIVATE
+  src
+)
+
 target_link_libraries(${PROJECT_NAME} PRIVATE
   m
 )
