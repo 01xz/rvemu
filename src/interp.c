@@ -909,7 +909,7 @@ static void handler_mret(State* state, RvInstr* instr) {
 static void handler_ni(State* state, RvInstr* instr) {}
 
 static void (*rv_instr_handler[RV_INSTR_NUM])(State*, RvInstr*) = {
-    // unprivileged: rv32i
+#ifdef RV32I_INSTRS
     [U_RV32I_LUI] = handler_lui,
     [U_RV32I_AUIPC] = handler_auipc,
     [U_RV32I_JAL] = handler_jal,
@@ -950,7 +950,8 @@ static void (*rv_instr_handler[RV_INSTR_NUM])(State*, RvInstr*) = {
     [U_RV32I_FENCE] = handler_ni,
     [U_RV32I_ECALL] = handler_ecall,
     [U_RV32I_EBREAK] = handler_ni,
-    // unprivileged: rv64i
+#endif
+#ifdef RV64I_INSTRS
     [U_RV64I_LWU] = handler_lwu,
     [U_RV64I_LD] = handler_ld,
     [U_RV64I_SD] = handler_sd,
@@ -966,16 +967,19 @@ static void (*rv_instr_handler[RV_INSTR_NUM])(State*, RvInstr*) = {
     [U_RV64I_SLLW] = handler_sllw,
     [U_RV64I_SRLW] = handler_srlw,
     [U_RV64I_SRAW] = handler_sraw,
-    // unprivileged: zifencei
+#endif
+#ifdef ZIFENCEI_INSTRS
     [U_ZIFENCEI_FENCE_I] = handler_ni,
-    // unprivileged: zicsr
+#endif
+#ifdef ZICSR_INSTRS
     [U_ZICSR_CSRRW] = handler_csrrw,
     [U_ZICSR_CSRRS] = handler_csrrs,
     [U_ZICSR_CSRRC] = handler_csrrc,
     [U_ZICSR_CSRRWI] = handler_csrrwi,
     [U_ZICSR_CSRRSI] = handler_csrrsi,
     [U_ZICSR_CSRRCI] = handler_csrrci,
-    // unprivileged: rv32m
+#endif
+#ifdef RV32M_INSTRS
     [U_RV32M_MUL] = handler_mul,
     [U_RV32M_MULH] = handler_mulh,
     [U_RV32M_MULHSU] = handler_mulhsu,
@@ -984,13 +988,15 @@ static void (*rv_instr_handler[RV_INSTR_NUM])(State*, RvInstr*) = {
     [U_RV32M_DIVU] = handler_divu,
     [U_RV32M_REM] = handler_rem,
     [U_RV32M_REMU] = handler_remu,
-    // unprivileged: rv64m
+#endif
+#ifdef RV64M_INSTRS
     [U_RV64M_MULW] = handler_mulw,
     [U_RV64M_DIVW] = handler_divw,
     [U_RV64M_DIVUW] = handler_divuw,
     [U_RV64M_REMW] = handler_remw,
     [U_RV64M_REMUW] = handler_remuw,
-    // unprivileged: rv32a
+#endif
+#ifdef RV32A_INSTRS
     [U_RV32A_LR_W] = handler_ni,
     [U_RV32A_SC_W] = handler_ni,
     [U_RV32A_AMOSWAP_W] = handler_ni,
@@ -1002,7 +1008,8 @@ static void (*rv_instr_handler[RV_INSTR_NUM])(State*, RvInstr*) = {
     [U_RV32A_AMOMAX_W] = handler_ni,
     [U_RV32A_AMOMINU_W] = handler_ni,
     [U_RV32A_AMOMAXU_W] = handler_ni,
-    // unprivileged: rv64a
+#endif
+#ifdef RV64A_INSTRS
     [U_RV64A_LR_D] = handler_ni,
     [U_RV64A_SC_D] = handler_ni,
     [U_RV64A_AMOSWAP_D] = handler_ni,
@@ -1014,7 +1021,8 @@ static void (*rv_instr_handler[RV_INSTR_NUM])(State*, RvInstr*) = {
     [U_RV64A_AMOMAX_D] = handler_ni,
     [U_RV64A_AMOMINU_D] = handler_ni,
     [U_RV64A_AMOMAXU_D] = handler_ni,
-    // unprivileged: rv32f
+#endif
+#ifdef RV32F_INSTRS
     [U_RV32F_FLW] = handler_flw,
     [U_RV32F_FSW] = handler_fsw,
     [U_RV32F_FMADD_S] = handler_fmadd_s,
@@ -1041,12 +1049,14 @@ static void (*rv_instr_handler[RV_INSTR_NUM])(State*, RvInstr*) = {
     [U_RV32F_FCVT_S_W] = handler_fcvt_s_w,
     [U_RV32F_FCVT_S_WU] = handler_fcvt_s_wu,
     [U_RV32F_FMV_W_X] = handler_fmv_w_x,
-    // unprivileged: rv64f
+#endif
+#ifdef RV64F_INSTRS
     [U_RV64F_FCVT_L_S] = handler_fcvt_l_s,
     [U_RV64F_FCVT_LU_S] = handler_fcvt_lu_s,
     [U_RV64F_FCVT_S_L] = handler_fcvt_s_l,
     [U_RV64F_FCVT_S_LU] = handler_fcvt_s_lu,
-    // unprivileged: rv32d
+#endif
+#ifdef RV32D_INSTRS
     [U_RV32D_FLD] = handler_fld,
     [U_RV32D_FSD] = handler_fsd,
     [U_RV32D_FMADD_D] = handler_fmadd_d,
@@ -1073,13 +1083,16 @@ static void (*rv_instr_handler[RV_INSTR_NUM])(State*, RvInstr*) = {
     [U_RV32D_FCVT_WU_D] = handler_fcvt_wu_d,
     [U_RV32D_FCVT_D_W] = handler_fcvt_d_w,
     [U_RV32D_FCVT_D_WU] = handler_fcvt_d_wu,
-    // unprivileged: rv64d
+#endif
+#ifdef RV64D_INSTRS
     [U_RV64D_FCVT_L_D] = handler_fcvt_l_d,
     [U_RV64D_FCVT_LU_D] = handler_fcvt_lu_d,
     [U_RV64D_FMV_X_D] = handler_fmv_x_d,
     [U_RV64D_FCVT_D_L] = handler_fcvt_d_l,
     [U_RV64D_FCVT_D_LU] = handler_fcvt_d_lu,
     [U_RV64D_FMV_D_X] = handler_fmv_d_x,
+#endif
+#ifdef PRIVILEGED_INSTRS
     // privileged: trap-return
     [P_SRET] = handler_sret,
     [P_MRET] = handler_mret,
@@ -1090,6 +1103,7 @@ static void (*rv_instr_handler[RV_INSTR_NUM])(State*, RvInstr*) = {
     [P_SINVAL_VMA] = handler_ni,
     [P_SFENCE_W_INVAL] = handler_ni,
     [P_SFENCE_INVAL_IR] = handler_ni,
+#endif
 };
 
 void exec_block_interp(State* state) {
