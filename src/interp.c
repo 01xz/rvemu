@@ -61,6 +61,8 @@ static void handler_bgeu(State* state, RvInstr* instr) {
   __HANDLER_BRANCH(rs1 >= rs2);
 }
 
+#undef __HANDLER_BRANCH
+
 #define __HANDLER_LOAD(type)                             \
   u64 addr = state->xregs[instr->rs1] + (i64)instr->imm; \
   state->xregs[instr->rd] = *(type*)TO_HOST(addr);
@@ -79,6 +81,8 @@ static void handler_lhu(State* state, RvInstr* instr) { __HANDLER_LOAD(u16); }
 
 static void handler_lwu(State* state, RvInstr* instr) { __HANDLER_LOAD(u32); }
 
+#undef __HANDLER_LOAD
+
 #define __HANDLER_STORE(type)                            \
   u64 addr = state->xregs[instr->rs1] + (i64)instr->imm; \
   *(type*)TO_HOST(addr) = (type)state->xregs[instr->rs2];
@@ -90,6 +94,8 @@ static void handler_sh(State* state, RvInstr* instr) { __HANDLER_STORE(i16); }
 static void handler_sw(State* state, RvInstr* instr) { __HANDLER_STORE(i32); }
 
 static void handler_sd(State* state, RvInstr* instr) { __HANDLER_STORE(i64); }
+
+#undef __HANDLER_STORE
 
 #define __HANDLER_I_ARITHMETIC(expr)  \
   u64 rs1 = state->xregs[instr->rs1]; \
@@ -147,6 +153,8 @@ static void handler_srliw(State* state, RvInstr* instr) {
 static void handler_sraiw(State* state, RvInstr* instr) {
   __HANDLER_I_ARITHMETIC((i64)((i32)rs1 >> (imm & 0x1f)));
 }
+
+#undef __HANDLER_I_ARITHMETIC
 
 #define __HANDLER_R_ARITHMETIC(expr)  \
   u64 rs1 = state->xregs[instr->rs1]; \
@@ -321,6 +329,8 @@ static void handler_remuw(State* state, RvInstr* instr) {
   __HANDLER_R_ARITHMETIC((i64)(i32)__remu((u32)rs1, (u32)rs2));
 }
 
+#undef __HANDLER_R_ARITHMETIC
+
 static void handler_ecall(State* state, RvInstr* instr) {
   state->re_enter_pc = state->pc + 4;
   state->exit_reason = kECall;
@@ -347,6 +357,8 @@ static u64 load_csr(const State* state, u16 addr) {
       return state->csrs[addr];
   }
 }
+
+#undef __LOAD_FCSR_FIELD
 
 #define __STORE_FCSR_FIELD(field)         \
   union {                                 \
@@ -375,6 +387,8 @@ static void store_csr(State* state, u16 addr, u64 value) {
       return;
   }
 }
+
+#undef __STORE_FCSR_FIELD
 
 static void update_paging(State* state, u16 addr) {
   state->page_table =
@@ -420,6 +434,8 @@ static void handler_csrrci(State* state, RvInstr* instr) {
   __HANDLER_CSR(t & ~(instr->rs1));
 }
 
+#undef __HANDLER_CSR
+
 static void handler_flw(State* state, RvInstr* instr) {
   u64 addr = state->xregs[instr->rs1] + (i64)instr->imm;
   state->fregs[instr->rd].lu = *(u32*)TO_HOST(addr) | (UINT64_MAX << 32);
@@ -441,6 +457,8 @@ static void handler_fsw(State* state, RvInstr* instr) {
 static void handler_fsd(State* state, RvInstr* instr) {
   __HANDLER_STORE_F(u64);
 }
+
+#undef __HANDLER_STORE_F
 
 #define __HANDLER_R_ARITHMETIC_S(expr)                          \
   f32 rs1 = state->fregs[instr->rs1].s;                         \
@@ -475,6 +493,8 @@ static void handler_fmax_s(State* state, RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_S(rs1 > rs2 ? rs1 : rs2);
 }
 
+#undef __HANDLER_R_ARITHMETIC_S
+
 static inline u32 __sgnj_s(u32 a, u32 b, bool n, bool x) {
   u32 sign = (u32)INT32_MIN;
   u32 t = x ? a : n ? sign : 0;
@@ -498,6 +518,8 @@ static void handler_fsgnjn_s(State* state, RvInstr* instr) {
 static void handler_fsgnjx_s(State* state, RvInstr* instr) {
   __HANDLER_SGNJ_S(false, true);
 }
+
+#undef __HANDLER_SGNJ_S
 
 #define __HANDLER_R_ARITHMETIC_D(expr)                          \
   f64 rs1 = state->fregs[instr->rs1].d;                         \
@@ -532,6 +554,8 @@ static void handler_fmax_d(State* state, RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_D(rs1 > rs2 ? rs1 : rs2);
 }
 
+#undef __HANDLER_R_ARITHMETIC_D
+
 static inline u64 __sgnj_d(u64 a, u64 b, bool n, bool x) {
   u64 sign = (u64)INT64_MIN;
   u64 t = x ? a : n ? sign : 0;
@@ -555,6 +579,8 @@ static void handler_fsgnjx_d(State* state, RvInstr* instr) {
   __HANDLER_SGNJ_D(false, true);
 }
 
+#undef __HANDLER_SGNJ_D
+
 #define __HANDLER_R_ARITHMETIC_FUSED_S(expr) \
   f32 rs1 = state->fregs[instr->rs1].s;      \
   f32 rs2 = state->fregs[instr->rs2].s;      \
@@ -576,6 +602,8 @@ static void handler_fnmsub_s(State* state, RvInstr* instr) {
 static void handler_fnmadd_s(State* state, RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_FUSED_S(-(rs1 * rs2) - rs3);
 }
+
+#undef __HANDLER_R_ARITHMETIC_FUSED_S
 
 #define __HANDLER_R_ARITHMETIC_FUSED_D(expr) \
   f64 rs1 = state->fregs[instr->rs1].d;      \
@@ -599,6 +627,8 @@ static void handler_fnmadd_d(State* state, RvInstr* instr) {
   __HANDLER_R_ARITHMETIC_FUSED_D(-(rs1 * rs2) - rs3);
 }
 
+#undef __HANDLER_R_ARITHMETIC_FUSED_D
+
 #define __HANDLER_R_COMPARE_S(expr)     \
   f32 rs1 = state->fregs[instr->rs1].s; \
   f32 rs2 = state->fregs[instr->rs2].s; \
@@ -616,6 +646,8 @@ static void handler_feq_s(State* state, RvInstr* instr) {
   __HANDLER_R_COMPARE_S(rs1 == rs2);
 }
 
+#undef __HANDLER_R_COMPARE_S
+
 #define __HANDLER_R_COMPARE_D(expr)     \
   f64 rs1 = state->fregs[instr->rs1].d; \
   f64 rs2 = state->fregs[instr->rs2].d; \
@@ -632,6 +664,8 @@ static void handler_flt_d(State* state, RvInstr* instr) {
 static void handler_feq_d(State* state, RvInstr* instr) {
   __HANDLER_R_COMPARE_D(rs1 == rs2);
 }
+
+#undef __HANDLER_R_COMPARE_D
 
 static void handler_fcvt_s_d(State* state, RvInstr* instr) {
   state->fregs[instr->rd].s = (f32)state->fregs[instr->rs1].d;
@@ -829,6 +863,8 @@ static void handler_sret(State* state, RvInstr* instr) {
   state->re_enter_pc = load_csr(state, CSR_SEPC);
   state->exit_reason = kDirectBranch;
 }
+
+#undef __STORE_MSTATUS_FIELD
 
 static void handler_mret(State* state, RvInstr* instr) {
   union {
