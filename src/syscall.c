@@ -20,20 +20,22 @@
 #define NEWLIB_O_TRUNC 0x400
 #define NEWLIB_O_EXCL 0x800
 
-#define RVEMU_SYSCALL_REWRITE_FLAG(flag) \
+#define __REWRITE_FLAG(flag) \
   if (flags & NEWLIB_##flag) hostflags |= flag;
 
 static inline int convert_flags(int flags) {
   int hostflags = 0;
-  RVEMU_SYSCALL_REWRITE_FLAG(O_RDONLY);
-  RVEMU_SYSCALL_REWRITE_FLAG(O_WRONLY);
-  RVEMU_SYSCALL_REWRITE_FLAG(O_RDWR);
-  RVEMU_SYSCALL_REWRITE_FLAG(O_APPEND);
-  RVEMU_SYSCALL_REWRITE_FLAG(O_CREAT);
-  RVEMU_SYSCALL_REWRITE_FLAG(O_TRUNC);
-  RVEMU_SYSCALL_REWRITE_FLAG(O_EXCL);
+  __REWRITE_FLAG(O_RDONLY);
+  __REWRITE_FLAG(O_WRONLY);
+  __REWRITE_FLAG(O_RDWR);
+  __REWRITE_FLAG(O_APPEND);
+  __REWRITE_FLAG(O_CREAT);
+  __REWRITE_FLAG(O_TRUNC);
+  __REWRITE_FLAG(O_EXCL);
   return hostflags;
 }
+
+#undef __REWRITE_FLAG
 
 static u64 handler_exit(Machine* m) {
   u64 ec = machine_get_xreg(m, X_REG_A0);
