@@ -20,4 +20,6 @@
 #define TO_HOST(addr) (addr + GUEST_MEMORY_OFFSET)
 #define TO_GUEST(addr) (addr - GUEST_MEMORY_OFFSET)
 
+#define SIZEOF_ARRAY(a) (sizeof(a) / sizeof(a[0]))
+
 #endif  // RVEMU_UTILS_H_

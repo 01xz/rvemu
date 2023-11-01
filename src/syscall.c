@@ -187,15 +187,13 @@ static u64 (*rv_old_syscall_handler[])(Machine*) = {
     [SYS_TIME - OLD_SYSCALL_THRESHOLD] = handler_ni_syscall,
 };
 
-#define RVEMU_SYSCALL_ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
-
 u64 do_syscall(Machine* m, u64 syscall) {
   u64 (*handler)(Machine*) = NULL;
 
-  if (syscall < RVEMU_SYSCALL_ARRAY_SIZE(rv_syscall_handler)) {
+  if (syscall < SIZEOF_ARRAY(rv_syscall_handler)) {
     handler = rv_syscall_handler[syscall];
   } else if (syscall - OLD_SYSCALL_THRESHOLD <
-             RVEMU_SYSCALL_ARRAY_SIZE(rv_old_syscall_handler)) {
+             SIZEOF_ARRAY(rv_old_syscall_handler)) {
     handler = rv_old_syscall_handler[syscall - OLD_SYSCALL_THRESHOLD];
   } else if (syscall == SYS_GETMAINVARS) {
     handler = handler_ni_syscall;
