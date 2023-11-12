@@ -1113,7 +1113,7 @@ void exec_block_interp(State* state) {
     rv_instr_decode(&instr, instr_raw);
     rv_instr_handler[instr.type](state, &instr);
 
-    state->xregs[X_REG_ZERO] = 0;
+    state->xregs[XREG_ZERO] = 0;
 
     if (instr.cont) break;
 

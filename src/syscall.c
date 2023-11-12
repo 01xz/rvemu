@@ -38,48 +38,48 @@ static inline int convert_flags(int flags) {
 #undef __REWRITE_FLAG
 
 static u64 handler_exit(Machine* m) {
-  u64 ec = machine_get_xreg(m, X_REG_A0);
+  u64 ec = machine_get_xreg(m, XREG_A0);
   exit(ec);  // #include <stdlib.h>
 }
 
 static u64 handler_read(Machine* m) {
-  u64 fd = machine_get_xreg(m, X_REG_A0);
-  u64 buf = machine_get_xreg(m, X_REG_A1);
-  u64 nbytes = machine_get_xreg(m, X_REG_A2);
+  u64 fd = machine_get_xreg(m, XREG_A0);
+  u64 buf = machine_get_xreg(m, XREG_A1);
+  u64 nbytes = machine_get_xreg(m, XREG_A2);
   return read(fd, (void*)TO_HOST(buf), (size_t)nbytes);  // #include <unistd.h>
 }
 
 static u64 handler_write(Machine* m) {
-  u64 fd = machine_get_xreg(m, X_REG_A0);
-  u64 buf = machine_get_xreg(m, X_REG_A1);
-  u64 n = machine_get_xreg(m, X_REG_A2);
+  u64 fd = machine_get_xreg(m, XREG_A0);
+  u64 buf = machine_get_xreg(m, XREG_A1);
+  u64 n = machine_get_xreg(m, XREG_A2);
   return write(fd, (void*)TO_HOST(buf), (size_t)n);  // #include <unistd.h>
 }
 
 static u64 handler_openat(Machine* m) {
-  u64 fd = machine_get_xreg(m, X_REG_A0);
-  u64 file = machine_get_xreg(m, X_REG_A1);
-  u64 oflag = machine_get_xreg(m, X_REG_A2);
-  u64 mode = machine_get_xreg(m, X_REG_A3);
+  u64 fd = machine_get_xreg(m, XREG_A0);
+  u64 file = machine_get_xreg(m, XREG_A1);
+  u64 oflag = machine_get_xreg(m, XREG_A2);
+  u64 mode = machine_get_xreg(m, XREG_A3);
   return openat(fd, (char*)TO_HOST(file), convert_flags(oflag),
                 (mode_t)mode);  // #include <fcntl.h>
 }
 
 static u64 handler_close(Machine* m) {
-  u64 fd = machine_get_xreg(m, X_REG_A0);
+  u64 fd = machine_get_xreg(m, XREG_A0);
   if (fd > 2) return close(fd);  // #include <unistd.h>
   return 0;
 }
 
 static u64 handler_lseek(Machine* m) {
-  u64 fd = machine_get_xreg(m, X_REG_A0);
-  u64 offset = machine_get_xreg(m, X_REG_A1);
-  u64 whence = machine_get_xreg(m, X_REG_A2);
+  u64 fd = machine_get_xreg(m, XREG_A0);
+  u64 offset = machine_get_xreg(m, XREG_A1);
+  u64 whence = machine_get_xreg(m, XREG_A2);
   return lseek(fd, (off_t)offset, whence);  // #include <unistd.h>
 }
 
 static u64 handler_brk(Machine* m) {
-  u64 addr = machine_get_xreg(m, X_REG_A0);
+  u64 addr = machine_get_xreg(m, XREG_A0);
   if (addr == 0) {
     addr = m->mmu.alloc;
   }
@@ -90,14 +90,14 @@ static u64 handler_brk(Machine* m) {
 }
 
 static u64 handler_fstat(Machine* m) {
-  u64 fd = machine_get_xreg(m, X_REG_A0);
-  u64 addr = machine_get_xreg(m, X_REG_A1);
+  u64 fd = machine_get_xreg(m, XREG_A0);
+  u64 addr = machine_get_xreg(m, XREG_A1);
   return fstat(fd, (struct stat*)TO_HOST(addr));  // #include <sys/stat.h>
 }
 
 static u64 handler_gettimeofday(Machine* m) {
-  u64 tv_addr = machine_get_xreg(m, X_REG_A0);
-  u64 tz_addr = machine_get_xreg(m, X_REG_A1);
+  u64 tv_addr = machine_get_xreg(m, XREG_A0);
+  u64 tz_addr = machine_get_xreg(m, XREG_A1);
   struct timeval* tv = (struct timeval*)TO_HOST(tv_addr);
   struct timezone* tz =
       (tz_addr != 0) ? (struct timezone*)TO_HOST(tz_addr) : NULL;
@@ -105,7 +105,7 @@ static u64 handler_gettimeofday(Machine* m) {
 }
 
 static u64 handler_ni_syscall(Machine* m) {
-  FATALF(", ni syscall: %lu, pc: %lx", machine_get_xreg(m, X_REG_A7),
+  FATALF(", ni syscall: %lu, pc: %lx", machine_get_xreg(m, XREG_A7),
          m->state.pc);
 }
 
@@ -167,9 +167,9 @@ static u64 (*rv_syscall_handler[])(Machine*) = {
 };
 
 static u64 handler_sysopen(Machine* m) {
-  u64 file = machine_get_xreg(m, X_REG_A0);
-  u64 oflag = machine_get_xreg(m, X_REG_A1);
-  u64 mode = machine_get_xreg(m, X_REG_A2);
+  u64 file = machine_get_xreg(m, XREG_A0);
+  u64 oflag = machine_get_xreg(m, XREG_A1);
+  u64 mode = machine_get_xreg(m, XREG_A2);
   return open((char*)TO_HOST(file), convert_flags(oflag),
               (mode_t)mode);  // #include <fcntl.h>
 }

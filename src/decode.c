@@ -478,7 +478,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
         case 0x0:  // CIW-format: C.ADDI4SPN
           *instr = decode_ciw_type(&un);
           instr->type = U_RV32I_ADDI;
-          instr->rs1 = X_REG_SP;
+          instr->rs1 = XREG_SP;
           assert(instr->imm != 0);
           return;
         case 0x1:  // CL-format: C.FLD
@@ -534,7 +534,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
         case 0x2:  // CI-format: C.LI
           *instr = decode_ci_type(&un);
           instr->type = U_RV32I_ADDI;
-          instr->rs1 = X_REG_ZERO;
+          instr->rs1 = XREG_ZERO;
           instr->imm = __get_ci_type_imm_sign_extended(&un);
           return;
         case 0x3: {  // CI-format
@@ -591,20 +591,20 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
         case 0x5:  // CJ-format: C.J
           *instr = decode_cj_type(&un);
           instr->type = U_RV32I_JAL;
-          instr->rs1 = X_REG_ZERO;
+          instr->rs1 = XREG_ZERO;
           instr->cont = true;
           return;
         case 0x6:  // CB-format: C.BEQZ
           *instr = decode_cb_type(&un);
           instr->type = U_RV32I_BEQ;
           instr->imm = __get_cb_type_imm(&un);
-          instr->rs2 = X_REG_ZERO;
+          instr->rs2 = XREG_ZERO;
           return;
         case 0x7:  // CB-format: C.BNEZ
           *instr = decode_cb_type(&un);
           instr->type = U_RV32I_BNE;
           instr->imm = __get_cb_type_imm(&un);
-          instr->rs2 = X_REG_ZERO;
+          instr->rs2 = XREG_ZERO;
           return;
         default:
           __builtin_unreachable();
@@ -624,31 +624,31 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
           *instr = decode_ci_type(&un);
           instr->type = U_RV32D_FLD;
           instr->imm = __get_ci_type_imm_scaled_8(&un);
-          instr->rs1 = X_REG_SP;
+          instr->rs1 = XREG_SP;
           return;
         case 0x2:  // CI-format: C.LWSP
           *instr = decode_ci_type(&un);
           instr->type = U_RV32I_LW;
           instr->imm = __get_ci_type_imm_scaled_4(&un);
-          instr->rs1 = X_REG_SP;
+          instr->rs1 = XREG_SP;
           return;
         case 0x3:  // CI-format: C.LDSP
           *instr = decode_ci_type(&un);
           instr->type = U_RV64I_LD;
           instr->imm = __get_ci_type_imm_scaled_8(&un);
-          instr->rs1 = X_REG_SP;
+          instr->rs1 = XREG_SP;
           return;
         case 0x4: {  // CR-format
           *instr = decode_cr_type(&un);
           if (un.crtype.funct4 == 0x8) {
             if (instr->rs2 == 0) {  // C.JR
               instr->type = U_RV32I_JALR;
-              instr->rd = X_REG_ZERO;
+              instr->rd = XREG_ZERO;
               instr->cont = true;
             } else {  // C.MV
               instr->type = U_RV32I_ADD;
               instr->rd = instr->rs1;
-              instr->rs1 = X_REG_ZERO;
+              instr->rs1 = XREG_ZERO;
             }
             return;
           } else {
@@ -656,7 +656,7 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
               instr->type = U_RV32I_EBREAK;
             } else if (instr->rs2 == 0) {  // C.JALR
               instr->type = U_RV32I_JALR;
-              instr->rd = X_REG_RA;
+              instr->rd = XREG_RA;
               instr->cont = true;
             } else {  // C.ADD
               instr->type = U_RV32I_ADD;
@@ -669,19 +669,19 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
           *instr = decode_css_type(&un);
           instr->type = U_RV32D_FSD;
           instr->imm = __get_css_type_imm_scaled_8(&un);
-          instr->rs1 = X_REG_SP;
+          instr->rs1 = XREG_SP;
           return;
         case 0x6:  // CSS-format: C.SWSP
           *instr = decode_css_type(&un);
           instr->type = U_RV32I_SW;
           instr->imm = __get_css_type_imm_scaled_4(&un);
-          instr->rs1 = X_REG_SP;
+          instr->rs1 = XREG_SP;
           return;
         case 0x7:  // CSS-format: C.SDSP
           *instr = decode_css_type(&un);
           instr->type = U_RV64I_SD;
           instr->imm = __get_css_type_imm_scaled_8(&un);
-          instr->rs1 = X_REG_SP;
+          instr->rs1 = XREG_SP;
           return;
         default:
           __builtin_unreachable();

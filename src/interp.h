@@ -24,8 +24,8 @@ typedef enum {
 } Mode;
 
 typedef struct {
-  u64 xregs[X_REG_NUM];
-  FReg fregs[F_REG_NUM];
+  u64 xregs[XREG_NUM];
+  FReg fregs[FREG_NUM];
   u64 csrs[CSR_NUM];
   u64 pc;
   u64 re_enter_pc;
