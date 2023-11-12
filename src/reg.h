@@ -27,7 +27,7 @@ typedef enum {
   FREG_FS2, FREG_FS3, FREG_FS4, FREG_FS5, FREG_FS6, FREG_FS7, FREG_FS8, FREG_FS9, FREG_FS10, FREG_FS11,
   FREG_FT8, FREG_FT9, FREG_FT10, FREG_FT11,
   FREG_NUM,
-  // clang-format off
+  // clang-format on
 } FRegType;
 
 typedef union {
