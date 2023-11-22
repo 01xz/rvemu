@@ -28,8 +28,10 @@ done
 
 if [ $failed_count -eq 0 ]; then
     echo "All tests passed. Total passed: $passed_count"
+    exit 0
 else
     echo "Total passed: $passed_count"
     echo "Total failed: $failed_count"
     echo -e "Failed tests:\n$failed_tests"
+    exit 1
 fi
