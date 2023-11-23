@@ -1,4 +1,4 @@
-name: Linux CMake Clang
+name: Test
 
 on:
   push:
@@ -11,7 +11,7 @@ env:
   RISCV: /opt/riscv
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-22.04
 
     steps:
@@ -23,8 +23,8 @@ jobs:
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
-    - name: Prepare Test Env
-      run: sudo RISCV=${{env.RISCV}} ./.github/riscv_tests_env.sh
+    - name: Prepare RISCV Environment
+      run: sudo RISCV=${{env.RISCV}} ${{github.workspace}}/.github/riscv_env.sh
 
     - name: Test
       working-directory: ${{github.workspace}}/test
