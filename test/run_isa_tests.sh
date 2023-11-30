@@ -27,11 +27,11 @@ for isa_test in $RISCV_ISA_TESTS/$test_pattern-*; do
 done
 
 if [ $failed_count -eq 0 ]; then
-    echo "All tests passed. Total passed: $passed_count"
+    echo -e "\e[32mAll tests passed. Total passed: $passed_count\e[0m"
     exit 0
 else
-    echo "Total passed: $passed_count"
-    echo "Total failed: $failed_count"
-    echo -e "Failed tests:\n$failed_tests"
+    echo -e "\e[31mTotal passed: $passed_count\e[0m"
+    echo -e "\e[31mTotal failed: $failed_count\e[0m"
+    echo -e "\e[31mFailed tests:\e[0m\n$failed_tests"
     exit 1
 fi
