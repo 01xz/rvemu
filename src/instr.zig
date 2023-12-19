@@ -3,7 +3,28 @@ const utils = @import("utils.zig");
 
 const tuple = utils.tuple;
 
-pub const Instr = union(enum) {
+pub const Instr = struct {
+    rv_instr: RvInstr,
+    rvc: bool,
+
+    const Self = @This();
+
+    pub fn decode(raw: u32) Self {
+        const quadrant: u2 = @intCast(raw & 0b11);
+        return switch (quadrant) {
+            0b11 => .{
+                .rv_instr = RvInstr.decodeNotRvc(raw),
+                .rvc = false,
+            },
+            else => .{
+                .rv_instr = RvInstr.decodeRvc(raw),
+                .rvc = true,
+            },
+        };
+    }
+};
+
+const RvInstr = union(enum) {
     rv32i: RV32I,
     rv64i: RV64I,
     zifencei: Zifencei,
@@ -20,15 +41,7 @@ pub const Instr = union(enum) {
 
     const Self = @This();
 
-    pub fn decode(raw: u32) Self {
-        const quadrant: u2 = @intCast(raw & 0b11);
-        return switch (quadrant) {
-            0b11 => decodeNotRvc(raw),
-            else => decodeRvc(raw),
-        };
-    }
-
-    inline fn decodeNotRvc(raw: u32) Self {
+    pub inline fn decodeNotRvc(raw: u32) Self {
         const Opcode = enum(u5) {
             lui = 0b0_1101,
             auipc = 0b0_0101,
@@ -257,7 +270,7 @@ pub const Instr = union(enum) {
         return fp;
     }
 
-    inline fn decodeRvc(raw: u16) Self {
+    pub inline fn decodeRvc(raw: u16) Self {
         _ = raw;
         return .{};
     }
