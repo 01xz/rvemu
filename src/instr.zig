@@ -125,10 +125,10 @@ pub const Instr = union(enum) {
 
     inline fn decodeImm(raw: u32) Self {
         var imm: Self = undefined;
-        if (RV32I.decodeImm(raw)) |rv32i| {
-            imm = .{ .rv32i = rv32i };
+        if (RV64I.decodeImm(raw)) |rv64i| {
+            imm = .{ .rv64i = rv64i };
         } else {
-            imm = .{ .rv64i = RV64I.decodeImm(raw) };
+            imm = .{ .rv32i = RV32I.decodeImm(raw) };
         }
         return imm;
     }
