@@ -70,7 +70,7 @@ fn execute(self: *Self, instr: *const Instr, memory: []u8) void {
                     if (rs1 == rs2) {
                         self.re_enter_pc = self.pc + i.imm;
                         self.exit = .direct_branch;
-                        instr.cont = true;
+                        self.cont = true;
                     }
                 },
                 .bne => |i| {
@@ -79,7 +79,7 @@ fn execute(self: *Self, instr: *const Instr, memory: []u8) void {
                     if (rs1 != rs2) {
                         self.re_enter_pc = self.pc + i.imm;
                         self.exit = .direct_branch;
-                        instr.cont = true;
+                        self.cont = true;
                     }
                 },
                 .blt => |i| {
@@ -88,7 +88,7 @@ fn execute(self: *Self, instr: *const Instr, memory: []u8) void {
                     if (rs1 < rs2) {
                         self.re_enter_pc = self.pc + i.imm;
                         self.exit = .direct_branch;
-                        instr.cont = true;
+                        self.cont = true;
                     }
                 },
                 .bge => |i| {
@@ -97,7 +97,7 @@ fn execute(self: *Self, instr: *const Instr, memory: []u8) void {
                     if (rs1 >= rs2) {
                         self.re_enter_pc = self.pc + i.imm;
                         self.exit = .direct_branch;
-                        instr.cont = true;
+                        self.cont = true;
                     }
                 },
                 .bltu => |i| {
@@ -106,7 +106,7 @@ fn execute(self: *Self, instr: *const Instr, memory: []u8) void {
                     if (rs1 < rs2) {
                         self.re_enter_pc = self.pc + i.imm;
                         self.exit = .direct_branch;
-                        instr.cont = true;
+                        self.cont = true;
                     }
                 },
                 .bgeu => |i| {
@@ -115,7 +115,7 @@ fn execute(self: *Self, instr: *const Instr, memory: []u8) void {
                     if (rs1 >= rs2) {
                         self.re_enter_pc = self.pc + i.imm;
                         self.exit = .direct_branch;
-                        instr.cont = true;
+                        self.cont = true;
                     }
                 },
                 .lb => |i| {
