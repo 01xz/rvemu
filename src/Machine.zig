@@ -42,12 +42,14 @@ pub fn run(self: Self) Exit {
         self.state.exit = .none;
         self.state.interpret();
 
-        if (self.state.exit == .direct_branch or self.state.exit == .indirect_branch) {
-            self.state.pc = self.state.re_enter_pc;
-            continue;
-        }
+        switch (self.state.exit) {
+            .direct_branch, .indirect_branch => {
+                self.state.pc = self.state.re_enter_pc;
+                continue;
+            },
 
-        break;
+            else => break,
+        }
     }
 
     self.state.pc = self.state.re_enter_pc;
