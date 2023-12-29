@@ -1,6 +1,10 @@
 #ifndef RVEMU_INTERP_H_
 #define RVEMU_INTERP_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 
 #include "csr.h"
@@ -36,5 +40,9 @@ typedef struct {
 } State;
 
 void exec_block_interp(State*);
+
+#ifdef __cplusplus
+} /* end extern "C" */
+#endif
 
 #endif  // RVEMU_INTERP_H_

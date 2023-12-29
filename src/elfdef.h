@@ -1,6 +1,10 @@
 #ifndef RVEMU_ELFDEF_H_
 #define RVEMU_ELFDEF_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "types.h"
 
 #define EI_NIDENT 16
@@ -47,5 +51,9 @@ typedef struct {
   u64 p_memsz;
   u64 p_align;
 } ElfProgHeader;
+
+#ifdef __cplusplus
+} /* end extern "C" */
+#endif
 
 #endif  // RVEMU_ELFDEF_H_

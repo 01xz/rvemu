@@ -1,6 +1,10 @@
 #ifndef RVEMU_UTILS_H_
 #define RVEMU_UTILS_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,5 +25,9 @@
 #define TO_GUEST(addr) (addr - GUEST_MEMORY_OFFSET)
 
 #define SIZEOF_ARRAY(a) (sizeof(a) / sizeof(a[0]))
+
+#ifdef __cplusplus
+} /* end extern "C" */
+#endif
 
 #endif  // RVEMU_UTILS_H_

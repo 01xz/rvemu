@@ -1,6 +1,10 @@
 #ifndef RVEMU_CSR_H_
 #define RVEMU_CSR_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "types.h"
 
 typedef enum {
@@ -112,5 +116,9 @@ typedef struct {
   u64 wpri_6 : 29;
   u64 sd     : 1;
 } Sstatus;
+
+#ifdef __cplusplus
+} /* end extern "C" */
+#endif
 
 #endif  // RVEMU_CSR_H_

@@ -1,6 +1,10 @@
 #ifndef RVEMU_SYSCALL_H_
 #define RVEMU_SYSCALL_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "machine.h"
 #include "types.h"
 
@@ -74,5 +78,9 @@ typedef enum {
 } OldSysCallType;
 
 u64 do_syscall(Machine*, u64);
+
+#ifdef __cplusplus
+} /* end extern "C" */
+#endif
 
 #endif  // RVEMU_SYSCALL_H_

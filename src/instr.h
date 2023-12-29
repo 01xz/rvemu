@@ -1,6 +1,10 @@
 #ifndef RVEMU_INSTR_H_
 #define RVEMU_INSTR_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // clang-format off
 #define RV32I_INSTRS(_)                                                   \
   _(LUI)                                                                  \
@@ -156,5 +160,9 @@ RVEMU_ISA(              \
   EXTENSION(PRIVILEGED) \
 );
 // clang-format on
+
+#ifdef __cplusplus
+} /* end extern "C" */
+#endif
 
 #endif  // RVEMU_INSTR_H_

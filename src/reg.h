@@ -1,6 +1,10 @@
 #ifndef RVEMU_REG_H_
 #define RVEMU_REG_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "types.h"
 
 typedef enum {
@@ -36,5 +40,9 @@ typedef union {
   f64 d;
   f32 s;
 } FReg;
+
+#ifdef __cplusplus
+} /* end extern "C" */
+#endif
 
 #endif  // RVEMU_REG_H_
