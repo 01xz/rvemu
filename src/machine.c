@@ -43,7 +43,9 @@ static inline void mmu_write(u64 addr, u8* data, size_t len) {
   memcpy((void*)TO_HOST(addr), (void*)data, len);
 }
 
-void machine_setup(Machine* m, int argc, char** argv) {
+void machine_setup(Machine* m, void* bus, int argc, char** argv) {
+  m->state.bus = bus;
+
   size_t stack_size = RVEMU_MACHINE_STACK_SIZE;
   u64 stack = mmu_alloc(&m->mmu, stack_size);
   m->state.xregs[XREG_SP] = stack + stack_size;

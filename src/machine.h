@@ -19,7 +19,7 @@ typedef struct {
 
 void machine_load_program(Machine*, const char*);
 
-void machine_setup(Machine*, int, char**);
+void machine_setup(Machine*, void*, int, char**);
 
 ExitReason machine_step(Machine*);
 

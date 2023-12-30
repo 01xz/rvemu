@@ -8,12 +8,13 @@ set(C_FILES
   ${PROJECT_SOURCE_DIR}/src/decode.c
   ${PROJECT_SOURCE_DIR}/src/interp.c
   ${PROJECT_SOURCE_DIR}/src/machine.c
-  ${PROJECT_SOURCE_DIR}/src/main.c
   ${PROJECT_SOURCE_DIR}/src/mmu.c
   ${PROJECT_SOURCE_DIR}/src/syscall.c
 )
 
-add_executable(${PROJECT_NAME} ${C_FILES})
+add_library(${PROJECT_NAME} STATIC
+  ${C_FILES}
+)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
   src
@@ -24,6 +25,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
+  COMPILE_AS_LIBRARY
 )
 
 target_compile_options(${PROJECT_NAME} PRIVATE

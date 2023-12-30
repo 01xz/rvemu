@@ -1,3 +1,5 @@
+#include <stddef.h>
+
 #include "interp.h"
 #include "machine.h"
 #include "reg.h"
@@ -8,7 +10,8 @@ int main(int argc, char* argv[]) {
 
   Machine m = {0};
   machine_load_program(&m, argv[1]);
-  machine_setup(&m, argc, argv);
+
+  machine_setup(&m, NULL, argc, argv);
 
   while (true) {
     ExitReason reason = machine_step(&m);

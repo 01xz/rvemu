@@ -7,6 +7,21 @@
 #include "decode.h"
 #include "utils.h"
 
+#ifdef COMPILE_AS_LIBRARY
+extern u64 bus_load(void*, u64, u8);
+extern void bus_store(void*, u64, u64, u8);
+#else
+static inline u64 bus_load(__attribute__((unused)) void* bus, u64 addr,
+                           u8 size) {
+  return executable_load(addr, size);
+}
+
+static inline void bus_store(__attribute__((unused)) void* bus, u64 addr,
+                             u64 value, u8 size) {
+  executable_store(addr, value, size);
+}
+#endif
+
 static void handler_lui(State* state, RvInstr* instr) {
   state->xregs[instr->rd] = (i64)instr->imm;
 }
@@ -65,7 +80,8 @@ static void handler_bgeu(State* state, RvInstr* instr) {
 
 #define __HANDLER_LOAD(type)                             \
   u64 addr = state->xregs[instr->rs1] + (i64)instr->imm; \
-  state->xregs[instr->rd] = *(type*)TO_HOST(addr);
+  state->xregs[instr->rd] =                              \
+      (type)bus_load(state->bus, addr, sizeof(type));
 
 static void handler_lb(State* state, RvInstr* instr) { __HANDLER_LOAD(i8); }
 
@@ -83,9 +99,10 @@ static void handler_lwu(State* state, RvInstr* instr) { __HANDLER_LOAD(u32); }
 
 #undef __HANDLER_LOAD
 
-#define __HANDLER_STORE(type)                            \
-  u64 addr = state->xregs[instr->rs1] + (i64)instr->imm; \
-  *(type*)TO_HOST(addr) = (type)state->xregs[instr->rs2];
+#define __HANDLER_STORE(type)                                        \
+  u64 addr = state->xregs[instr->rs1] + (i64)instr->imm;             \
+  bus_store(state->bus, addr, (type)state->xregs[instr->rs2], \
+            sizeof(type))
 
 static void handler_sb(State* state, RvInstr* instr) { __HANDLER_STORE(i8); }
 
@@ -438,17 +455,20 @@ static void handler_csrrci(State* state, RvInstr* instr) {
 
 static void handler_flw(State* state, RvInstr* instr) {
   u64 addr = state->xregs[instr->rs1] + (i64)instr->imm;
-  state->fregs[instr->rd].lu = *(u32*)TO_HOST(addr) | (UINT64_MAX << 32);
+  state->fregs[instr->rd].lu =
+      (u32)bus_load(state->bus, addr, sizeof(u32)) | (UINT64_MAX << 32);
 }
 
 static void handler_fld(State* state, RvInstr* instr) {
   u64 addr = state->xregs[instr->rs1] + (i64)instr->imm;
-  state->fregs[instr->rd].lu = *(u64*)TO_HOST(addr);
+  state->fregs[instr->rd].lu =
+      (u64)bus_load(state->bus, addr, sizeof(u64));
 }
 
-#define __HANDLER_STORE_F(type)                          \
-  u64 addr = state->xregs[instr->rs1] + (i64)instr->imm; \
-  *(type*)TO_HOST(addr) = (type)state->fregs[instr->rs2].lu;
+#define __HANDLER_STORE_F(type)                                         \
+  u64 addr = state->xregs[instr->rs1] + (i64)instr->imm;                \
+  bus_store(state->bus, addr, (type)state->fregs[instr->rs2].lu, \
+            sizeof(type));
 
 static void handler_fsw(State* state, RvInstr* instr) {
   __HANDLER_STORE_F(u32);
@@ -1109,7 +1129,7 @@ static void (*rv_instr_handler[RV_INSTR_NUM])(State*, RvInstr*) = {
 void exec_block_interp(State* state) {
   static RvInstr instr = {0};
   while (true) {
-    u32 instr_raw = *(u32*)TO_HOST(state->pc);
+    u32 instr_raw = (u32)bus_load(state->bus, state->pc, sizeof(u32));
     rv_instr_decode(&instr, instr_raw);
     rv_instr_handler[instr.type](state, &instr);
 
