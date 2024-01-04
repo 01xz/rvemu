@@ -80,8 +80,7 @@ static void handler_bgeu(State* state, RvInstr* instr) {
 
 #define __HANDLER_LOAD(type)                             \
   u64 addr = state->xregs[instr->rs1] + (i64)instr->imm; \
-  state->xregs[instr->rd] =                              \
-      (type)bus_load(state->bus, addr, sizeof(type));
+  state->xregs[instr->rd] = (type)bus_load(state->bus, addr, sizeof(type));
 
 static void handler_lb(State* state, RvInstr* instr) { __HANDLER_LOAD(i8); }
 
@@ -99,10 +98,9 @@ static void handler_lwu(State* state, RvInstr* instr) { __HANDLER_LOAD(u32); }
 
 #undef __HANDLER_LOAD
 
-#define __HANDLER_STORE(type)                                        \
-  u64 addr = state->xregs[instr->rs1] + (i64)instr->imm;             \
-  bus_store(state->bus, addr, (type)state->xregs[instr->rs2], \
-            sizeof(type))
+#define __HANDLER_STORE(type)                            \
+  u64 addr = state->xregs[instr->rs1] + (i64)instr->imm; \
+  bus_store(state->bus, addr, (type)state->xregs[instr->rs2], sizeof(type))
 
 static void handler_sb(State* state, RvInstr* instr) { __HANDLER_STORE(i8); }
 
@@ -461,14 +459,12 @@ static void handler_flw(State* state, RvInstr* instr) {
 
 static void handler_fld(State* state, RvInstr* instr) {
   u64 addr = state->xregs[instr->rs1] + (i64)instr->imm;
-  state->fregs[instr->rd].lu =
-      (u64)bus_load(state->bus, addr, sizeof(u64));
+  state->fregs[instr->rd].lu = (u64)bus_load(state->bus, addr, sizeof(u64));
 }
 
-#define __HANDLER_STORE_F(type)                                         \
-  u64 addr = state->xregs[instr->rs1] + (i64)instr->imm;                \
-  bus_store(state->bus, addr, (type)state->fregs[instr->rs2].lu, \
-            sizeof(type));
+#define __HANDLER_STORE_F(type)                          \
+  u64 addr = state->xregs[instr->rs1] + (i64)instr->imm; \
+  bus_store(state->bus, addr, (type)state->fregs[instr->rs2].lu, sizeof(type));
 
 static void handler_fsw(State* state, RvInstr* instr) {
   __HANDLER_STORE_F(u32);
