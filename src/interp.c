@@ -10,7 +10,7 @@
 #ifdef COMPILE_AS_LIBRARY
 extern u64 bus_load(void*, u64, u8);
 extern void bus_store(void*, u64, u64, u8);
-extern void wait(void*);
+extern void notify_and_wait(void*);
 #else
 static inline u64 bus_load(__attribute__((unused)) void* bus, u64 addr,
                            u8 size) {
@@ -22,7 +22,7 @@ static inline void bus_store(__attribute__((unused)) void* bus, u64 addr,
   executable_store(addr, value, size);
 }
 
-static inline void wait(__attribute__((unused)) void* bus) {}
+static inline void notify_and_wait(__attribute__((unused)) void* bus) {}
 #endif
 
 static void handler_lui(State* state, RvInstr* instr) {
@@ -1138,6 +1138,6 @@ void exec_block_interp(State* state) {
 
     state->pc += instr.rvc ? 2 : 4;
 
-    wait(state->bus);
+    notify_and_wait(state->bus);
   }
 }
