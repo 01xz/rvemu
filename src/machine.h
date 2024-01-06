@@ -23,12 +23,12 @@ void machine_setup(Machine*, void*, int, char**);
 
 ExitReason machine_step(Machine*);
 
-inline u64 machine_get_xreg(Machine* m, int reg) {
+static inline u64 machine_get_xreg(Machine* m, int reg) {
   assert(reg > 0 && reg <= XREG_NUM);
   return m->state.xregs[reg];
 }
 
-inline void machine_set_xreg(Machine* m, int reg, u64 reg_val) {
+static inline void machine_set_xreg(Machine* m, int reg, u64 reg_val) {
   assert(reg > 0 && reg <= XREG_NUM);
   m->state.xregs[reg] = reg_val;
 }
