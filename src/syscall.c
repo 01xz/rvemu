@@ -37,8 +37,15 @@ static inline int convert_flags(int flags) {
 
 #undef __REWRITE_FLAG
 
+#ifdef COMPILE_AS_LIBRARY
+extern void terminate();
+#else
+static void terminate() {}
+#endif
+
 static u64 handler_exit(Machine* m) {
   u64 ec = machine_get_xreg(m, XREG_A0);
+  terminate();
   exit(ec);  // #include <stdlib.h>
 }
 
