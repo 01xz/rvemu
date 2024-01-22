@@ -19,6 +19,7 @@ static void handler_jal(State* state, RvInstr* instr) {
   state->xregs[instr->rd] = state->pc + (instr->rvc ? 2 : 4);
   state->re_enter_pc = state->pc + (i64)instr->imm;
   state->exit_reason = kDirectBranch;
+  state->cont = true;
 }
 
 static void handler_jalr(State* state, RvInstr* instr) {
@@ -26,6 +27,7 @@ static void handler_jalr(State* state, RvInstr* instr) {
   state->xregs[instr->rd] = state->pc + (instr->rvc ? 2 : 4);
   state->re_enter_pc = (xreg_rs1 + (i64)instr->imm) & ~(u64)1;
   state->exit_reason = kIndirectBranch;
+  state->cont = true;
 }
 
 #define __HANDLER_BRANCH(condi)                       \
@@ -34,7 +36,7 @@ static void handler_jalr(State* state, RvInstr* instr) {
   if (condi) {                                        \
     state->re_enter_pc = state->pc + (i64)instr->imm; \
     state->exit_reason = kDirectBranch;               \
-    instr->cont = true;                               \
+    state->cont = true;                               \
   }
 
 static void handler_beq(State* state, RvInstr* instr) {
@@ -334,6 +336,7 @@ static void handler_remuw(State* state, RvInstr* instr) {
 static void handler_ecall(State* state, RvInstr* instr) {
   state->re_enter_pc = state->pc + 4;
   state->exit_reason = kECall;
+  state->cont = true;
 }
 
 #define __LOAD_FCSR_FIELD(field)          \
@@ -862,6 +865,7 @@ static void handler_sret(State* state, RvInstr* instr) {
   // set PC = SEPC
   state->re_enter_pc = load_csr(state, CSR_SEPC);
   state->exit_reason = kDirectBranch;
+  state->cont = true;
 }
 
 #undef __STORE_MSTATUS_FIELD
@@ -904,6 +908,7 @@ static void handler_mret(State* state, RvInstr* instr) {
   // set PC = MEPC
   state->re_enter_pc = load_csr(state, CSR_MEPC);
   state->exit_reason = kDirectBranch;
+  state->cont = true;
 }
 
 static void handler_ni(State* state, RvInstr* instr) {}
@@ -1115,7 +1120,7 @@ void exec_block_interp(State* state) {
 
     state->xregs[XREG_ZERO] = 0;
 
-    if (instr.cont) break;
+    if (state->cont) break;
 
     state->pc += instr.rvc ? 2 : 4;
   }
