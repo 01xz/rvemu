@@ -592,7 +592,6 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
           *instr = decode_cj_type(&un);
           instr->type = U_RV32I_JAL;
           instr->rs1 = XREG_ZERO;
-          instr->cont = true;
           return;
         case 0x6:  // CB-format: C.BEQZ
           *instr = decode_cb_type(&un);
@@ -644,7 +643,6 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
             if (instr->rs2 == 0) {  // C.JR
               instr->type = U_RV32I_JALR;
               instr->rd = XREG_ZERO;
-              instr->cont = true;
             } else {  // C.MV
               instr->type = U_RV32I_ADD;
               instr->rd = instr->rs1;
@@ -657,7 +655,6 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
             } else if (instr->rs2 == 0) {  // C.JALR
               instr->type = U_RV32I_JALR;
               instr->rd = XREG_RA;
-              instr->cont = true;
             } else {  // C.ADD
               instr->type = U_RV32I_ADD;
               instr->rd = instr->rs1;
@@ -1292,14 +1289,12 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
         case 0x19: {  // I-type: JALR
           *instr = decode_i_type(&un);
           instr->type = U_RV32I_JALR;
-          instr->cont = true;
           return;
         }  // case 0x19
 
         case 0x1b: {  // J-type: JAL
           *instr = decode_j_type(&un);
           instr->type = U_RV32I_JAL;
-          instr->cont = true;
           return;
         }  // case 0x1b
 
@@ -1308,18 +1303,15 @@ void rv_instr_decode(RvInstr *instr, u32 instr_raw) {
             switch (un.itype.imm11_0) {
               case 0x000:  // ECALL
                 instr->type = U_RV32I_ECALL;
-                instr->cont = true;
                 return;
               case 0x001:  // EBREAK
                 instr->type = U_RV32I_EBREAK;
                 return;
               case 0x102:  // SRET
                 instr->type = P_SRET;
-                instr->cont = true;
                 return;
               case 0x302:  // MRET
                 instr->type = P_MRET;
-                instr->cont = true;
                 return;
               default:
                 __builtin_unreachable();

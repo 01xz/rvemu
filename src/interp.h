@@ -37,6 +37,7 @@ typedef struct {
   bool enable_paging;
   u64 page_table;
   ExitReason exit_reason;
+  bool cont;
   void* bus;
 } State;
 

@@ -17,12 +17,14 @@ ExitReason machine_step(Machine* m) {
     if (m->state.exit_reason == kDirectBranch ||
         m->state.exit_reason == kIndirectBranch) {
       m->state.pc = m->state.re_enter_pc;
+      m->state.cont = false;
       continue;  // JIT
     }
     break;
   }
 
   m->state.pc = m->state.re_enter_pc;
+  m->state.cont = false;
   assert(m->state.exit_reason == kECall);
   return kECall;
 }

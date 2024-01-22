@@ -19,7 +19,6 @@ typedef struct {
   i32 imm;
   u16 csr;
   bool rvc;
-  bool cont;
 } RvInstr;
 
 void rv_instr_decode(RvInstr*, u32);
