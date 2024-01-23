@@ -4,7 +4,7 @@ TARGET=riscv64-unknown-elf
 
 mkdir -p $RISCV
 
-curl -Lo /tmp/riscv.tar.gz https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2023.11.22/riscv64-elf-ubuntu-22.04-gcc-nightly-2023.11.22-nightly.tar.gz
+curl -Lo /tmp/riscv.tar.gz https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2023.07.07/riscv64-elf-ubuntu-22.04-gcc-nightly-2023.07.07-nightly.tar.gz
 
 tar -xvf /tmp/riscv.tar.gz -C $RISCV --strip-components 1
 
